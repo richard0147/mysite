@@ -1,0 +1,24 @@
+cn域名注册客户端采用java编写
+使用tomcat运行
+
+1,配置JDK
+修改tomcat-1.1.1/bin/catalina.sh文件，开头加入 JAVA_HOME=/usr/
+
+2,复制cnrc.war到 tomcat/webapp/  下
+
+3，将cnrc-xsd.zip中schema校验文件解压到tomcat/bin目录下
+
+4，配置注册商证书
+需要去线上下载注册商证书、cnnic证书、
+ote环境中，
+注册商证书密码：注册商id重复两遍
+注册商登录密码：abc123
+证书存放位置：webapp/cnrc/cert/
+证书/服务器配置：webapp/WEB-INF/classes/edn.properties
+
+
+5,将本机ip通过ross加入注册上认证的ip中
+接口管理->接口管理->选择注册上id->修改授权
+sqlquery.cnnic.cn中查询注册库中是否更改
+
+6，tomcat/bin/start.sh启动tomcat即可

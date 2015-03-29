@@ -1,0 +1,192 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>报告预览</title>
+      <!-- 引入 Bootstrap -->
+      <link href="{% static 'reports/css/bootstrap.min.css' %}" rel="stylesheet">
+      <!--script type="text/javascript" src="{% static 'reports/js/jquery.js' %}"></script-->
+      <script type="text/javascript" src="{% static 'reports/js/jquery-1.7.1.min.js' %}"></script>
+      <!-- 包括所有已编译的插件 -->
+      <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
+      
+      <!-- 时间选择插件 -->
+      <link type="text/css" href="{% static 'reports/css/jquery-ui-1.8.17.custom.css' %}" rel="stylesheet" />
+      <link type="text/css" href="{% static 'reports/css/jquery-ui-timepicker-addon.css' %}" rel="stylesheet" />
+      <!--script type="text/javascript" src="js/jquery-1.7.1.min.js"></script-->
+	  <script type="text/javascript" src="{% static 'reports/js/jquery-ui-1.8.17.custom.min.js' %}"></script>
+	  <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-addon.js' %}"></script>
+      <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-zh-CN.js' %}"></script>
+    <script type="text/javascript">
+    $(function () {
+        $(".ui_timepicker").datetimepicker({
+            //showOn: "button",
+            //buttonImage: "./css/images/icon_calendar.gif",
+            //buttonImageOnly: true,
+            showSecond: true,
+            timeFormat: 'hh:mm:ss',
+            stepHour: 1,
+            stepMinute: 1,
+            stepSecond: 1
+        })
+    })
+    </script>
+  </head>
+  <body>
+    <div class="row">
+    <div class="col-lg-12">
+      <h1 align="center">故障报告生成系统</h1>
+    </div>
+    </div>
+    
+    <div class="row">
+    <div class="col-lg-8 col-md-offset-2">
+      <form role="form" action="{% url 'reports:new' %}" method="post" >
+      {% csrf_token %}
+       
+       <div class="form-group">
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="name">标题</label>
+         </div>
+         <div class="col-lg-6">
+           <input type="text" class="form-control" id="title" placeholder="请输入标题" value="CNQPS故障处理报告">
+         </div>
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="name">值班人员</label>
+         </div>
+         <div class="col-lg-3">
+           <input type="text" class="form-control" placeholder="请输入姓名" >
+         </div>
+         <div class="col-lg-3">
+           <input type="text" class="form-control" placeholder="请输入姓名" >
+         </div>
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="name">故障时间</label>
+         </div>
+         <div class="col-lg-4">
+           <input type="datetime" class="form-control ui_timepicker" placeholder="开始时间" >
+         </div>
+         <div class="col-lg-4">
+           <input type="datetime" class="form-control ui_timepicker" placeholder="结束时间" >
+         </div>
+         </div>
+       </div>
+      
+       <div class="form-group">
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="name">摘要</label>
+         </div>
+         <div class="col-lg-8">
+           <textarea class="form-control" rows="3"></textarea>
+         </div>
+         </div>
+      </div>
+      
+      <div class="form-group">
+         <div class="row">
+             <div class="col-lg-2">
+               <label for="name">处理过程</label>
+             </div>
+             <div class="col-lg-3">
+               <input type="datetime" class="form-control ui_timepicker" placeholder="请输入时间" >
+             </div>
+             <div class="col-lg-7">
+               <input type="text" class="form-control" placeholder="请输入内容" >
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-lg-2">
+             </div>
+             <div class="col-lg-3">
+               <input type="datetime" class="form-control ui_timepicker" placeholder="请输入时间" >
+             </div>
+             <div class="col-lg-7">
+               <input type="text" class="form-control" placeholder="请输入内容" >
+             </div>
+         </div>
+         <div class="row">
+             <div class="col-lg-2">
+             </div>
+             <div class="col-lg-3">
+               <input type="datetime" class="form-control ui_timepicker" placeholder="请输入时间" >
+             </div>
+             <div class="col-lg-7">
+               <input type="text" class="form-control" placeholder="请输入内容" >
+             </div>
+         </div>
+         
+       </div>
+       
+       <label for="name">选择MRTG图像</label>
+       <div class="checkbox">
+         <div class="row">
+           <div class="col-lg-3">
+             <label><input type="checkbox"> 
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+           <div class="col-lg-3">
+             <label><input type="checkbox">
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+           <div class="col-lg-3">
+             <label><input type="checkbox">
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+           <div class="col-lg-3">
+             <label><input type="checkbox">
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+          
+         </div><!--row-->
+       </div><!--checkbox-->
+       
+       <label for="name">选择Dnsla图像</label>
+       <div class="checkbox">
+         <div class="row">
+           <div class="col-lg-3">
+             <label><input type="checkbox"> 
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+           <div class="col-lg-3">
+             <label><input type="checkbox">
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+           <div class="col-lg-3">
+             <label><input type="checkbox">
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+           <div class="col-lg-3">
+             <label><input type="checkbox">
+                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
+             </label>
+           </div>
+          
+         </div><!--row-->
+       </div><!--checkbox-->
+       
+       <button type="submit" value="提交" class="btn btn-default">提交</button>
+    </form>
+    
+    </div>
+    </div>
+  </body>
+</html>

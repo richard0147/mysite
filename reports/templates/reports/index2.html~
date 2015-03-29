@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>报告预览</title>
+        <!-- 引入 Bootstrap -->
+        {% load staticfiles %}
+        <link href="{% static 'reports/css/bootstrap.min.css' %}"" rel="stylesheet">
+        <script type="text/javascript" src="{% static 'reports/js/jquery.js' %"></script>
+        <!-- 包括所有已编译的插件 -->
+        <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %"></script>
+    </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-6 col-md-offset-3">
+        {% if latest_report_list %}
+            <ul>
+            {% for report in latest_report_list %}
+              <li><a href="{% url 'polls:detail' question.id %}">{{ report.abstract }}</a></li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No reports are available.</p>
+        {% endif %}
+        
+        </div><!--主框架-->
+      
+      
+      </div>
+    </div>
+  </body>
+</html>

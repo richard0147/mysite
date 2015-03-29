@@ -1,0 +1,79 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>报告预览</title>
+        <!-- 引入 Bootstrap -->
+        
+        <link href="{% static 'reports/css/bootstrap.min.css' %}"" rel="stylesheet">
+        <script type="text/javascript" src="{% static 'reports/js/jquery.js' %}"></script>
+        <!-- 包括所有已编译的插件 -->
+        <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'reports/js/index.js' %}"></script>
+    </head>
+  <body>
+    <div class="jumbotron" style='background-image:url("{% static 'reports/images/Partitura_by_Vincijun.jpg' %}");'>
+      <!--  style='background-image:url("{% static 'reports/images/Partitura_by_Vincijun.jpg' %}");' -->
+      <!--img src="{% static 'reports/images/Partitura_by_Vincijun.jpg' %}" class="img-rounded"-->
+      <div class="container-fluid" >
+        <div class="row">
+        <div class="col-lg-6 col-md-offset-3">
+          <div class="row">
+          <div class="col-lg-12">
+            <h1 align="center">故障报告生成系统</h1>
+            <p align="center">这是一个故障报告生成系统</p>
+          </div>
+          </div>
+          <div class="row">
+          <div class="col-lg-2 col-md-offset-10">
+              <p align="center">
+                <a class="btn btn-primary  btn-block" role="button"  href="{% url 'reports:create'%}"">
+                创建
+                </a>
+              </p >
+          </div>
+          </div>
+                
+          <div class="row" id="view-create-button">
+          <div class="col-lg-12">
+            <table class="table table-hover">
+               <caption>历史报告</caption>
+               <thead>
+                  <tr>
+                     <th>序号</th>
+                     <th>创建时间</th>
+                     <th>摘要</th>
+                     <th>操作</th>
+                  </tr>
+               </thead>
+               <tbody>
+               {% if latest_report_list %}
+                  {% for report in latest_report_list %}
+                  <tr>
+                     <td>{{ report.id }}</td>
+                     <td>{{ report.create_time }}</td>
+                     <td>{{ report.abstract }}</td>
+                     <td>
+                       <button class="btn btn-danger  btn-xs" >删除</button>
+                       <button class="btn btn-primary btn-sm" >修改</button>
+                       <a class="btn btn-success" href="{% url 'reports:view' report.id %}">预览</a>
+                     </td>
+                  </tr>
+                  {% endfor %}
+               {% else %}
+                  <tr>
+                    <td>No reports are available.</td>
+                 </tr>
+               {% endif %}
+               </tbody>
+            </table>
+          </div>
+          </div>
+          
+          <br><br><br><br><br><br><br><br><br>
+        </div>
+        </div> 
+      </div>
+    </div>
+  </body>
+</html>

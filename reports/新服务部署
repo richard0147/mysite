@@ -1,0 +1,39 @@
+新服务部署步骤：
+1，安装jdk，配置幻镜变量
+export $JAVA_HOME=/home/ops/java
+export $PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:/home/ops/java/lib:/home/ops/java/jre/lib
+
+source .bashrc 
+
+2，验证
+echo $JAVA_HOME 
+/home/ops/java 
+
+which java 
+~/java/bin/java 
+
+3，tomcat主要配置文件server.xml 
+1) <Server port="55001" shutdown="64d341bbc108ca9ffc2db7f943e38a6f">
+2) <Connector executor="tomcatThreadPool" port="55002" protocol="org.apache.coyote.http11.Http11NioProtocol" connectionTimeout="20000" redirectPort="6643" maxThreads="800" enableLookups="false" acceptCount
+="400"/>
+3) <Context docBase="/home/ops/finance-static/cnnic-apache-tomcat-7.0.54/webapps/finance-static/" path="" reloadable="true" /> 
+
+4， default.properties 
+url地址最后加/
+路径检查都存在
+email更改抬头
+
+5，database.properties 
+wf_oracle_jdbcurl=jdbc:oracle:thin:@//218.241.108.181:1521/srsdb
+wf_oracle_username=epp_billing
+wf_oracle_password=Hell0$2015
+wf_oracle_maxActive=5
+wf_oracle_maxIdle=3 
+
+schedules-service-static-web 
+
+
+Tomcat系列之服务器的安装与配置以及各组件详解
+http://freeloda.blog.51cto.com/2033581/1299644
+
