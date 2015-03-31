@@ -18,31 +18,22 @@ def index(request):
     return render(request, 'reports/index.html', context)
 
 def create(request):
+    """
     #为了保存image外键,建立report
     try:
         report=Report()
         report.save()
     except:
         pass
-    
-    
-    #mrtg_image_list=get_mrtg_image(report)
+    """
+
+    mrtg_image_list=get_mrtg_image()
     mrtg_image_list=[]
-    image=Mrtg_images()
-    #f = open('/home/richard/develop/mysite/reports/static/reports/images/Partitura_by_Vincijun.jpg')
-    #myfile = File(f)
-    #image.picture.save('Partitura_by_Vincijun.jpg',myfile,save=True)
-    image.picture='Partitura_by_Vincijun.jpg'
-    image.report=report
-    image.save()
-    image.name="asddf"
-    mrtg_image_list.append(image)
-
-
-        
     return render(request, 'reports/create.html', {
         "mrtg_image_list":mrtg_image_list,
-        "report":report,
+        "mrtg_image_prefix":mrtg_image_prefix,
+        "dnsla_image_list":dnsla_image_list,
+        "dnsla_image_prefix":dnsla_image_prefix,
     })
 
 def new(request):
@@ -96,7 +87,7 @@ def view(request,report_id):
 def detail(request):
     pass
 
-def get_mrtg_image(report):
+def get_mrtg_image():
     #格式化时间
     end_time=int(time.time())
     start_time=end_time-86400
@@ -110,7 +101,8 @@ def get_mrtg_image(report):
 
     mrtg_image_list=[]
     for rrd_file in rrd_files:
-        image_file_name_key=rrd_file.replace('/home/mrtg/mrtg/htdocs/cnqps/cnqps_','').replace('.rrd','')
+        
+        image_file_name_key=rrd_file.replace(os.path.join(rrd_file_path,'cnqps_'),'').replace('.rrd','')
         try:
             #image_file_num=name_to_num[image_file_name_key]
             node=Node.objects.get(abbr='image_file_name_key').nb
@@ -121,7 +113,7 @@ def get_mrtg_image(report):
             node_name='空'
         image_file_name=image_file_name_key+'_'+image_file_num+'_'+file_time+'.png'
         image_file_path=os.path.join(mrtg_image_save_dir,image_file_name)
-
+        #pdb.set_trace()
         os.popen('%s graph %s  --start %s --end %s         \
 			     --title "Daily\' Graph (5 Minutes Average) "      \
 			     --vertical-label "Bits Per second"               \
@@ -147,13 +139,13 @@ def get_mrtg_image(report):
 			     GPRINT:value2:LAST:"%%10.2lf %%Sb/S"        \
 			     COMMENT:" \\n"                             \
 			     COMMENT:"Last update\\: %s"'%(rrd_tool,image_file_path,start_time,end_time,rrd_file,rrd_file,rrd_file,rrd_file,str(comment_now)))
+        """
         image=Mrtg_images()
-        #f = open('/home/richard/develop/mysite/reports/static/reports/images/Partitura_by_Vincijun.jpg')
-        #myfile = File(f)
-        #image.picture.save('Partitura_by_Vincijun.jpg',myfile,save=True)
         image.picture=image_file_name
         image.report=report
         image.save()
         image.name=node_name
         mrtg_image_list.append(image)
+        """
+        mrtg_image_list.append(image_file_name)
     return mrtg_image_list

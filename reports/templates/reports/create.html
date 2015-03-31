@@ -83,6 +83,28 @@
          </div>
        </div>
       
+      <div class="form-group">
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="domain">攻击域名</label>
+         </div>
+         <div class="col-lg-3">
+           <input type="text" class="form-control" placeholder="域名" >
+         </div>
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="ip">来源ip</label>
+         </div>
+         <div class="col-lg-3">
+           <input type="text" class="form-control" placeholder="ip" >
+         </div>
+         </div>
+       </div>
+       
        <div class="form-group">
          <div class="row">
          <div class="col-lg-2">
@@ -132,26 +154,14 @@
        <label for="name">选择MRTG图像</label>
        <div class="checkbox">
          <div class="row">
-           <div class="col-lg-3">
-             <label><input type="checkbox"> 
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
-           <div class="col-lg-3">
-             <label><input type="checkbox">
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
-           <div class="col-lg-3">
-             <label><input type="checkbox">
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
-           <div class="col-lg-3">
-             <label><input type="checkbox">
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
+           
+          {% for mrtg_image in mrtg_image_list %}
+          <div class="col-lg-3">
+            <label><input type="checkbox"> 
+              <img src="{{mrtg_image_prefix}}{{mrtg_image}}" class="img-thumbnail"></img>
+            </label>
+          </div>
+          {% endfor %}
           
          </div><!--row-->
        </div><!--checkbox-->
@@ -159,26 +169,13 @@
        <label for="name">选择Dnsla图像</label>
        <div class="checkbox">
          <div class="row">
-           <div class="col-lg-3">
-             <label><input type="checkbox"> 
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
-           <div class="col-lg-3">
-             <label><input type="checkbox">
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
-           <div class="col-lg-3">
-             <label><input type="checkbox">
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
-           <div class="col-lg-3">
-             <label><input type="checkbox">
-                <img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img>
-             </label>
-           </div>
+          {% for dnsla_image in dnsla_image_list %}
+          <div class="col-lg-3">
+            <label><input type="checkbox"> 
+              <img src="{{dnsla_image_prefix}}{{dnsla_image}}" class="img-thumbnail"></img>
+            </label>
+          </div>
+          {% endfor %}
           
          </div><!--row-->
        </div><!--checkbox-->
