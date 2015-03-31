@@ -2,15 +2,15 @@ from django.db import models
 
 class Report(models.Model):
     title=models.CharField(max_length=50)
-    create_time=models.DateTimeField(auto_now=True)
+    create_time=models.DateTimeField()
     #sunyuwu#=#liumingxing
     persion=models.CharField(max_length=100)
     abstract=models.CharField(max_length=1000)
     
     type=models.IntegerField(default=1)
     #last_time=models.TimeField()
-    start_time=models.DateTimeField(auto_now=True)
-    end_time=models.DateTimeField(auto_now=True)
+    start_time=models.DateTimeField()
+    end_time=models.DateTimeField()
     max_qps=models.IntegerField(default=0)
     is_end=models.BooleanField(default=True)
 
