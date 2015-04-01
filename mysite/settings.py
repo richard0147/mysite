@@ -91,3 +91,9 @@ USE_TZ = False
 MEDIA_ROOT='/home/richard/develop/mysite/media'
 MEDIA_URL='/media/'
 STATIC_URL = '/static/'
+
+
+EMAIL_HOST = "smtp.cnnic.cn"
+#EMAIL_PORT=25
+EMAIL_HOST_USER = "sunyuwu" 
+EMAIL_HOST_PASS = "sunqijiayou_" 

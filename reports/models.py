@@ -1,3 +1,4 @@
+#coding=utf-8
 from django.db import models
 
 class Report(models.Model):
@@ -16,6 +17,8 @@ class Report(models.Model):
 
     def __unicode__(self):              # __unicode__ on Python 2
         return self.title
+
+
 class Mrtg_images(models.Model):
     report=models.ForeignKey(Report,related_name='mrtg_images')
     picture=models.ImageField(upload_to='mrtg')
@@ -69,6 +72,23 @@ class Node(models.Model):
     name=models.CharField(max_length=50)
 
 
+from django import forms
+class ContactForm(forms.Form):
+    subject = forms.CharField(max_length=100)
+    message = forms.CharField(widget=forms.Textarea)
+    sender = forms.EmailField()
+    cc_myself = forms.BooleanField(required=False)
 
+class ReportForm(forms.Form):
+    title=forms.CharField(max_length=50,label='标题',initial='CNQPS故障报告',help_text='50 characters max.')
+    start_time=forms.DateTimeField(label='开始时间')
+    end_time=forms.DateTimeField(label='结束时间')
+    persion=forms.CharField(max_length=100,label='参与人员')
+    domain=forms.MultipleChoiceField(label='攻击域名')
+    ip=forms.MultipleChoiceField(label='来源IP')
+    abstract=forms.CharField(max_length=100,label='故障摘要')
+    process=forms.MultiValueField(fields=(forms.DateTimeField(),forms.CharField()))
+    mrtg_image=forms.MultipleChoiceField(label='MRTG图像')
+    dnsla_image=forms.MultipleChoiceField(label='DNSLA图像')
     
     

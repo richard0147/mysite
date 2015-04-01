@@ -9,6 +9,7 @@ import pdb
 import datetime,time,os,sys
 from django.core.files import File
 from generic import *
+
 # Create your views here.
 
 
@@ -16,6 +17,22 @@ def index(request):
     latest_report_list = Report.objects.order_by('-create_time')[:10]
     context = {'latest_report_list': latest_report_list}
     return render(request, 'reports/index.html', context)
+
+    title=models.CharField(max_length=50)
+    create_time=models.DateTimeField()
+    #sunyuwu#=#liumingxing
+    persion=models.CharField(max_length=100)
+    abstract=models.CharField(max_length=1000)
+    
+    type=models.IntegerField(default=1)
+    #last_time=models.TimeField()
+    start_time=models.DateTimeField()
+    end_time=models.DateTimeField()
+    max_qps=models.IntegerField(default=0)
+    is_end=models.BooleanField(default=True)
+
+
+
 
 def create(request):
     """
@@ -25,7 +42,7 @@ def create(request):
         report.save()
     except:
         pass
-    """
+    
 
     mrtg_image_list=get_mrtg_image()
     mrtg_image_list=[]
@@ -35,6 +52,23 @@ def create(request):
         "dnsla_image_list":dnsla_image_list,
         "dnsla_image_prefix":dnsla_image_prefix,
     })
+    """
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = ReportForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            
+            return HttpResponseRedirect('/reports/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        report=Report()
+        form = ReportForm(instance=report)
+
+    return render(request, 'reports/create.html', {'form': form})
+    
 
 def new(request):
     pass
@@ -149,3 +183,41 @@ def get_mrtg_image():
         """
         mrtg_image_list.append(image_file_name)
     return mrtg_image_list
+
+
+
+
+def sendmail(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = ContactForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            pdb.set_trace()
+            from django.core.mail import send_mail
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+            sender = form.cleaned_data['sender']
+            cc_myself = form.cleaned_data['cc_myself']
+
+            recipients = ['sunyuwu@cnnic.cn']
+            if cc_myself:
+                recipients.append(sender)
+
+            send_mail(subject, message, sender, recipients)
+            return HttpResponseRedirect('/reports/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = ContactForm()
+
+    return render(request, 'reports/index.html', {'form': form})
+    
+
+
+
+
+
+
+

@@ -9,5 +9,7 @@ urlpatterns = patterns('',
     # ex: /reports/5/view/
     url(r'^(?P<report_id>\d+)/view/$', views.view, name='view'),
     # ex: /reports/5/detail/
-    url(r'^new/$', views.detail, name='new'),
+    url(r'^new/$', views.new, name='new'),
+    
+    url(r'^sendmail/$', views.sendmail, name='sendmail'),
 )

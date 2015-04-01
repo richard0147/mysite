@@ -1,0 +1,80 @@
+form api
+
+from django import forms
+
+class ContactForm(forms.Form):
+    subject = forms.CharField(max_length=100)
+    message = forms.CharField(widget=forms.Textarea)
+    sender = forms.EmailField()
+    cc_myself = forms.BooleanField(required=False)
+
+一个form实例,要么是绑定的,要么是非绑定的:
+    一个非绑定的实例:>>> f = ContactForm()
+    一个绑定的实例:  >>> data = {'subject': 'hello',
+                    ...         'message': 'Hi there',
+                    ...         'sender': 'foo@example.com',
+                    ...         'cc_myself': True}
+                    >>> f = ContactForm(data)
+    Form.is_bound来判定是否绑定
+    在Form实例中 的数据是不可更改的
+    
+使用form验证数据
+ Form.clean():自定义验证数据方式,比如数据局域相互依赖
+ Form.is_valid():Form对象验证数据的主函数,一个绑定的Form实例调用这个函数,返回是否验证成功
+    >>> data = {'subject': '',
+    ...         'message': 'Hi there',
+    ...         'sender': 'invalid email address',
+    ...         'cc_myself': True}
+    >>> f = ContactForm(data)
+    >>> f.is_valid()
+ Form.errors:访问error属性,返回一个错误消息字典
+    >>> f.errors
+    {'sender': [u'Enter a valid email address.'], 'subject': [u'This field is required.']}
+ form的数据会在第一次调用is_valid()方法,或第一次访问errors属性时被验证
+ 
+ Form.errors.as_data():返回一个字典,映射数据区域的原始ValidationError实例,
+    >>> f.errors.as_data()
+    {'sender': [ValidationError(['Enter a valid email address.'])],
+    'subject': [ValidationError(['This field is required.'])]}
+    可以在view中重写错误信息,或自定义逻辑.或序列化错误消息.
+ Form.errors.as_json(escape_html=False):返回序列化成JSON的错误消息
+     >>> f.errors.as_json()
+    {"sender": [{"message": "Enter a valid email address.", "code": "invalid"}],
+    "subject": [{"message": "This field is required.", "code": "required"}]}
+ Form.add_error(field, error):从view向Form实例中添加错误消息
+    Form.add_error()自动清除cleand_data中保存的field的数据
+ Form.non_field_errors():返回errors列表,不和特定field相关,
+
+动态初始化数据
+    Form.initial:声明一个field的值
+        >>> f = ContactForm(initial={'subject': 'Hi there!'})
+        可以在定义form类的时候使用,也可以在初始化form实例的时候使用
+
+检查form的数据是否被更改
+    Form.has_changed():
+        表单被提交后,重构一个form,并附上初始值,就可以比较了
+        >>> f = ContactForm(request.POST, initial=data)
+        >>> f.has_changed()
+
+访问form中的区域
+    Form.fields
+    f.fields.values()
+    f.fields['name'].label = "Username"
+    注意:不要更改base_fields属性,因为这回影响到后来的所有实例
+        f.base_fields['name'].label = "Username"
+
+访问"干净的"数据
+    Form.cleaned_data
+    每个Form类不仅要负责验证数据,还要清理数据,将数据转化成统一的格式.
+    创建实例之后,并验证,就可以用cleaned_data来访问它
+    cleaned_data中只包含被验证通过的数据.
+    cleaned_data中不包含form类定义之外的field,并且包含所有定义的数据,即使为空
+    
+
+
+
+
+
+
+
+ 

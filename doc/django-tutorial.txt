@@ -1,0 +1,184 @@
+教程1
+
+建立一个项目
+    $ django-admin.py startproject mysite
+    外面的文件夹mysite可以随意更改名字
+    manage.py是一个命令行工具，可以影响整个django项目，详细：https://docs.djangoproject.com/en/1.7/ref/django-admin/
+    里面的文件夹mysite是真实的django项目包，这个名字是import的Python包的名字
+    mysite/__init__.py:空文件，表明这个目录是个python包
+    mysite/settings.py:Django项目配置文件，详细：https://docs.djangoproject.com/en/1.7/topics/settings/
+    mysite/urls.py:Django项目URL的声明，详细：https://docs.djangoproject.com/en/1.7/topics/http/urls/
+    mysite/wsgi.py: WEB服务器网关接口
+
+数据库的设置
+在mysite/settings.py中
+DATABASES = {
+    'default': {
+        #'ENGINE': 'django.db.backends.sqlite3','NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'qps_report',
+        'USER': 'root',
+        'PASSWORD': '25031874',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
+}
+注意：需要在mysql中建立数据库的名字
+时区的设置TIME_ZONE
+INSTALLED_APPS包含了Django项目所安装的app
+INSTALLED_APPS中，建立数据库的表： 
+$python manage.py migrate
+
+建立一个app
+在manage.py
+$ python manage.py startapp polls
+在mysite/settings.py 设置可以找到这个app
+INSTALLED_APPS = (
+'polls',
+)
+告诉django models做了一些变动：
+$ python manage.py makemigrations polls
+利用sqlmigrate 输入移植的名字，返回sql
+sqlmigrate 并没有真正运行sql
+$ python manage.py sqlmigrate polls 0001
+
+数据库变动三个步骤：
+Change your models (in models.py).
+Run "python manage.py makemigrations " to create migrations for those changes
+Run "python manage.py migrate" to apply those changes to the database.
+
+使用shell API
+python manage.py shell
+在models.py中每个表加入__str__() 方法，改变models的显示。
+Question.objects.all()
+Question.objects.filter(id=1)
+Question.objects.filter(question_text__startswith='What')
+Question.objects.get(pk=1)
+
+Django设置了外键可以访问的一个集合
+q = Question.objects.get(pk=1)
+q.choice_set.all()
+q.choice_set.create(choice_text='Not much', votes=0)
+
+数据库关系
+https://docs.djangoproject.com/en/1.7/ref/models/relations/
+数据库API
+https://docs.djangoproject.com/en/1.7/topics/db/queries/
+
+
+教程2-admin
+创建一个admin用户: $ python manage.py createsuperuser
+richard/sunyuwu0628@126.com/250318
+将app注册到admin页面中:
+    修改polls/admin.py　添加admin.site.register(Question)
+    点击question可以修改题目，时间，保存按钮有三个
+    点击右上角history可以查看历史修改
+个性化admin的表单：
+    修改显示的顺序：
+    class QuestionAdmin(admin.ModelAdmin):
+        fields = ['pub_date', 'question_text']
+    分区显示不同的数据：
+    class QuestionAdmin(admin.ModelAdmin):
+        fieldsets = [
+            (None,               {'fields': ['question_text']}),
+            ('Date information', {'fields': ['pub_date']}),
+        ]
+    区域可折叠（collapse）：
+    class QuestionAdmin(admin.ModelAdmin):
+        fieldsets = [
+            (None,               {'fields': ['question_text']}),
+            ('Date information', {'fields': ['pub_date'], 'classes': ['collapse']}),
+        ]
+添加相关的对象：
+    添加另外一个对象（inlines）：
+    class ChoiceInline(admin.StackedInline):
+        model = Choice
+        extra = 3
+
+    class QuestionAdmin(admin.ModelAdmin):
+            fieldsets = [
+                (None,               {'fields': ['question_text']}),
+                ('Date information', {'fields': ['pub_date'], 'classes': ['collapse']}),
+            ]
+            inlines = [ChoiceInline]
+    节省空间模式：
+    class ChoiceInline(admin.TabularInline):
+
+个性化admin列表
+    增加要展示的列：
+    list_display = ('question_text', 'pub_date', 'was_published_recently')
+    通过点击表头来排序
+    增加一个过滤器：
+    list_filter = ['pub_date']
+    上方增加搜索框:
+    search_fields = ['question_text']
+个性化admin外观
+    个性化django项目模板（重载模板）：
+        在项目目录创建templates文件夹
+        在mysite/settings.py中设置：
+        TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+        在templates中创建admin文件夹，将django中内置的admin/base_site.html 拷贝到这个目录
+        
+教程３－url,view
+Django uses what are known as ‘URLconfs’. A URLconf maps URL patterns (described as regular expressions) to views
+编写第一个view
+    编写polls/views.py
+    编写polls/urls.py,指向上个view
+    编写mysite/urls.py,讲上个url.py包含进来
+
+url的一些参数
+    url() argument: regex,正则表达式
+    url() argument: view,关联的view
+    url() argument: kwargs,传入view的字典参数
+    url() argument: name,将url命名
+    
+url传输过程:
+    输入/poll/34/ Djanog加载mysite/urls,匹配url模式
+    匹配poll后,Django将34/传入include()的url
+    匹配r'^(?P<question_id>\d+)/$,将question_id=34,传入函数中
+
+一个view要做的事情:返回包含请求内容的HttpResponse对象,或者抛出一个异常如Http404
+在polls文件夹内创建templates,Django的模板系统会自动找到它
+     polls/templates/polls/index.html
+A shortcut: render():载入模板,填充内容,返回HttpResponse对象.
+抛出一个404异常:
+A shortcut: get_object_or_404()
+
+模板系统:
+    https://docs.djangoproject.com/en/1.7/topics/templates/
+移除模板中URL硬编码,使用url中的name来替代,这样再修改url时,不需要修改模板.
+<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+<li><a href="{% url 'detail' question.id %}">{{ question.question_text }}</a></li>
+
+在root URLconf中添加命名空间,区分不同的url命名
+url(r'^polls/', include('polls.urls', namespace="polls")),
+
+
+教程4-表单
+一个简单的表单:
+    在模板中使用{% csrf_token %} 
+    在投票后使用 HttpResponseRedirect 而不是一个普通的HttpResponse,HttpResponseRedirect只需要一个参数:用户被重定向到的URL. 在成功处理POST请求之后,总要返回HttpResponseRedirect,这是个好习惯.
+    使用reverse()函数构造一个URL,可以防止view中硬编码.
+
+Use generic views(TODO)
+
+
+教程6-静态文件
+创建polls/static/，Django会自动发现这个文件夹，就像会自动发现polls/templates/ 一样
+创建polls/static/polls/，将静态文件放在这里，这样有助于django区分不同app中的静态文件
+在html文件开头加入{% load staticfiles %}，使之识别静态文件
+ {% static %}这个标签在其他静态文件中不适用，如css中，这些文件都不是由django生成的。在静态文件中使用相对路径，方便之后做更改。
+
+
+
+其他:
+文件对象
+    1,在setting中定义
+    MEDIA_ROOT='/home/richard/develop/media' 文件上传的根目录
+    MEDIA_URL='/media/' 文件引用所使用的url(类似 static)
+    2,在model中定义
+    picture=models.ImageField(upload_to='mrtg')
+    3,赋值 image.picture='abc.png'
+    4,引用 
+
+
