@@ -79,16 +79,61 @@ class ContactForm(forms.Form):
     sender = forms.EmailField()
     cc_myself = forms.BooleanField(required=False)
 
+
+
+from django.forms import widgets
+class DateSelectorWidget(widgets.MultiWidget):
+    def __init__(self, attrs=None):
+        _widgets = (
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+        )
+        super(DateSelectorWidget, self).__init__(_widgets, attrs)
+
+    def decompress(self, value):
+        if value:
+            return value.split(':::')[0:5]
+        return [None, None, None]
+
+class TestMultiField(forms.MultiValueField):
+    widget = DateSelectorWidget
+
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.CharField(),
+            forms.CharField(),
+            forms.CharField(),
+            forms.CharField(),
+            forms.CharField(),
+        )
+        super(TestMultiField, self).__init__(fields, *args, **kwargs)
+
+    def compress(self, data_list):
+        if data_list:
+            return ':::'.join(data_list)
+        return ''
+
 class ReportForm(forms.Form):
-    title=forms.CharField(max_length=50,label='标题',initial='CNQPS故障报告',help_text='50 characters max.')
+    title=forms.CharField(max_length=50,label='标题',initial='CNQPS故障报告',help_text='50 characters max.',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+        )
     start_time=forms.DateTimeField(label='开始时间')
     end_time=forms.DateTimeField(label='结束时间')
-    persion=forms.CharField(max_length=100,label='参与人员')
+    persion=forms.CharField(max_length=100,label=('参与人员','asdfasdf'))
     domain=forms.MultipleChoiceField(label='攻击域名')
-    ip=forms.MultipleChoiceField(label='来源IP')
-    abstract=forms.CharField(max_length=100,label='故障摘要')
-    process=forms.MultiValueField(fields=(forms.DateTimeField(),forms.CharField()))
-    mrtg_image=forms.MultipleChoiceField(label='MRTG图像')
+    ip=forms.MultiValueField(label='来源IP',widget=forms.TextInput(attrs={'class': 'form-control'}))
+    abstract=forms.CharField(max_length=100,label='故障摘要',widget=forms.Textarea)
+    process=TestMultiField()
+    mrtg_image=forms.TypedMultipleChoiceField(
+        required=False,
+        choices=(('leve1', '差评'),('leve2', '中评'),('leve3', '1好评')),
+        label='MRTG图像',
+        widget=forms.CheckboxSelectMultiple
+    )
     dnsla_image=forms.MultipleChoiceField(label='DNSLA图像')
-    
-    
+
+
+

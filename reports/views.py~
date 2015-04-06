@@ -45,8 +45,12 @@ def create(request):
     
 
     mrtg_image_list=get_mrtg_image()
+    """
+    
+    """
     mrtg_image_list=[]
-    return render(request, 'reports/create.html', {
+    dnsla_image_list=[]
+    return render(request, 'reports/create2.html', {
         "mrtg_image_list":mrtg_image_list,
         "mrtg_image_prefix":mrtg_image_prefix,
         "dnsla_image_list":dnsla_image_list,
@@ -56,22 +60,25 @@ def create(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
+        pdb.set_trace()
         form = ReportForm(request.POST)
+        #form['title'].label_tag(attrs={'class':'form-control'})
+        #form['title'].css_classes('form-control')
         # check whether it's valid:
+        
         if form.is_valid():
             
             return HttpResponseRedirect('/reports/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
-        report=Report()
-        form = ReportForm(instance=report)
+        form = ReportForm()
 
     return render(request, 'reports/create.html', {'form': form})
     
 
 def new(request):
-    pass
+    pdb.set_trace()
 
 def view(request,report_id):
     report = get_object_or_404(Report, pk=report_id)
@@ -194,18 +201,25 @@ def sendmail(request):
         form = ContactForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-            pdb.set_trace()
+            #pdb.set_trace()
             from django.core.mail import send_mail
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
             sender = form.cleaned_data['sender']
             cc_myself = form.cleaned_data['cc_myself']
 
-            recipients = ['sunyuwu@cnnic.cn']
-            if cc_myself:
-                recipients.append(sender)
+            #recipients = ['sunyuwu@cnnic.cn']
+            #if cc_myself:
+                #recipients.append(sender)
 
-            send_mail(subject, message, sender, recipients)
+            #send_mail(subject, message, sender, recipients)
+            
+            import smtplib 
+            smtp = smtplib.SMTP()   
+            smtp.connect("smtp.126.com", "25")   
+            smtp.login('sunyuwu0628', 'abc_25031874')   
+            smtp.sendmail('sunyuwu0628@126.com', 'sunyuwu@cnnic.cn', 'From: sunyuwu0628@126.com/r/nTo: sunyuwu@cnnic.cn/r/nSubject: this is a email from python demo/r/n/r/nJust for test~_~')   
+            smtp.quit()  
             return HttpResponseRedirect('/reports/')
 
     # if a GET (or any other method) we'll create a blank form

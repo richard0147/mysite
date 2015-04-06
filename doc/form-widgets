@@ -1,0 +1,71 @@
+widgets
+    widgets是Django对html元素的描述,处理HTML渲染,抽取POST的数据.
+    widgets需要在form fields中注册
+
+指定widgets
+    comment = forms.CharField(widget=forms.Textarea)
+设置widgets参数
+    BIRTH_YEAR_CHOICES = ('1980', '1981', '1982')
+    class SimpleForm(forms.Form):
+        birth_year = forms.DateField(widget=SelectDateWidget(years=BIRTH_YEAR_CHOICES))
+
+继承自选择widget的 widgets
+Select widgets are used by default on ChoiceField fields. The choices displayed on the widget are inherited from the ChoiceField and changing ChoiceField.choices will update Select.choices.
+
+自定义widget实例
+    两个方法自定义widgets实例:
+        每个widget实例
+        每个widget类
+    每一个widget实例:
+        class CommentForm(forms.Form):
+            name = forms.CharField(widget=forms.TextInput(attrs={'class': 'special'}))
+    每个widget类 :
+        在widget中添加特定的css/javascript方法,深入的python编程..
+
+widget 类
+
+class Widget(attrs=None)
+    attrs:一个包含HTML属性的字典
+    render(name, value, attrs=None):
+        返回widget的HTML元素,使用unicode.这个方法需要被子类实现,否则报错.
+        value不保证被验证通过
+    value_from_datadict(data, files, name)
+        输入字典数据,widget的名字,返回widget的值.
+        files may contain data coming from request.FILES
+        
+class MultiWidget(widgets, attrs=None)
+    由多个widget组成的一个widgets.  MultiWidget 与 MultiValueField 联合使用
+    widgets
+        MultiWidget 一个必要参数
+    decompress(value)
+        MultiWidget 一个必要方法,需要被子类实现.
+        输入一个"压缩"的数据,输出解压缩数据列表.
+        输入数据是被认证过的,但可以为空.
+    render(name, value, attrs=None)
+        value:
+        当value是一个列表的时候,render返回子widget
+        当value是一个数值的时候,render先调用decompress方法创建一个列表,再返回
+        render方法不用实现
+    format_output(rendered_widgets)
+        输入要渲染的widgets列表,返回一个Unicode HTML字符串
+        这个特性可以让你将HTML页面设计成想要的样子
+        
+        
+        
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

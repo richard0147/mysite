@@ -93,7 +93,7 @@ MEDIA_URL='/media/'
 STATIC_URL = '/static/'
 
 
-EMAIL_HOST = "smtp.cnnic.cn"
+EMAIL_HOST = "smtp.126.com"
 #EMAIL_PORT=25
-EMAIL_HOST_USER = "sunyuwu@cnnic.cn" 
-EMAIL_HOST_PASS = "sunqijiayou_" 
+EMAIL_HOST_USER = "sunyuwu0628@126.com" 
+EMAIL_HOST_PASS = "abc_25031874" 

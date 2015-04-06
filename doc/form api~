@@ -3,6 +3,8 @@ form api
 from django import forms
 
 class ContactForm(forms.Form):
+    error_css_class = 'error'
+    required_css_class = 'required'
     subject = forms.CharField(max_length=100)
     message = forms.CharField(widget=forms.Textarea)
     sender = forms.EmailField()
@@ -70,6 +72,63 @@ class ContactForm(forms.Form):
     cleaned_data中只包含被验证通过的数据.
     cleaned_data中不包含form类定义之外的field,并且包含所有定义的数据,即使为空
     
+Form对象的第二个任务是渲染HTML
+    渲染的HTML不包含table标签和submit按钮,需要自己完成
+    每一个field对应一个HTML标签,CharField对应<input type='text'>,这些是默认值可以使用wedgets来修改
+    HTML 的name取自Form类中field的定义
+    每个field的文字标签也可以更改
+    <label>中的id是'id_'前缀加field名字,
+    
+    其他输出形式:
+        as_p():每个field包含在一个<p>标签中
+        as_ul():每个field包含在一个<li>标签中
+        as_table():默认调用这个
+
+错误样式
+Form.error_css_class
+Form.required_css_class
+
+配置form HTML元素id和<label>标签
+    Form.auto_id:
+        改变id的行为,True False string
+        False:不渲染<label>标签
+        True:渲染<label>标签,用field做id
+        string:渲染<label>标签,用"xxx_%S"做标签
+    Form.label_suffix:
+        默认是":"
+
+错误显示方式:
+    作为一个<ul class="errorlist">在field附近输出错误
+    自定义error列表的格式:
+    >>> from django.forms.utils import ErrorList
+    >>> class DivErrorList(ErrorList):
+    ...     def __str__(self):              # __unicode__ on Python 2
+    ...         return self.as_divs()
+    ...     def as_divs(self):
+    ...         if not self: return ''
+    ...         return '<div class="errorlist">%s</div>' % ''.join(['<div class="error">%s</div>' % e for e in self])
+    
+    >>> f = ContactForm(data, auto_id=False, error_class=DivErrorList)
+    >>> f.as_p()
+
+更多的输出形式
+    class BoundField:用来展示HTML或者访问Form实例的某个field的属性
+    form['subject']
+    for boundfield in form: print(boundfield)
+    
+    BoundField.errors:访问field的errors属性
+    BoundField.label_tag(contents=None, attrs=None, label_suffix=None):访问field的label标签
+        contents用来替换默认的标签内容
+        attrs字典包含了label标签的其他属性
+    BoundField.css_classes()
+        更改class
+    BoundField.value()
+    BoundField.id_for_label
+
+上传文件
+表单继承
+    
+
 
 
 
