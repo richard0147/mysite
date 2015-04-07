@@ -64,15 +64,22 @@ def create(request):
         form = ReportForm(request.POST)
         #form['title'].label_tag(attrs={'class':'form-control'})
         #form['title'].css_classes('form-control')
-        # check whether it's valid:
+        #check whether it's valid:
         
         if form.is_valid():
-            
+
             return HttpResponseRedirect('/reports/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
+        data={
+        'mrtg_image':[('leve1', '差评'),('leve2', '中评'),('leve3', '1好评')]
+        }
+        #form = ReportForm(initial={'mrtg_image': ['leve1','leve2']})
         form = ReportForm()
+        mrtg_image_dic={1:"abc",2:"e3f"}
+        #pdb.set_trace()
+        return render(request, 'reports/create.html', {'form': form,'mrtg_image_dic':mrtg_image_dic})
 
     return render(request, 'reports/create.html', {'form': form})
     
@@ -188,7 +195,7 @@ def get_mrtg_image():
         image.name=node_name
         mrtg_image_list.append(image)
         """
-        mrtg_image_list.append(image_file_name)
+        mrtg_image_list.append([image_file_num,image_file_name])
     return mrtg_image_list
 
 
