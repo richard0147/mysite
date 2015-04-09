@@ -23,12 +23,34 @@
             //showOn: "button",
             //buttonImage: "./css/images/icon_calendar.gif",
             //buttonImageOnly: true,
-            showSecond: true,
-            timeFormat: 'hh:mm:ss',
+            showSecond: false,
+            timeFormat: 'hh:mm',
             stepHour: 1,
             stepMinute: 1,
             stepSecond: 1
         })
+        
+        var mrtg_labels=$("#mrtg_select_image").children('label');
+        var mrtg_images=$("#mrtg_select_image").children('img');
+
+        for(var i=0;i<mrtg_labels.length;i++){
+            var mrtg_label=mrtg_labels[i];
+            //alert(mrtg_label);
+            var value=$($(mrtg_label).children()[0]).attr('value');
+            for(var j=0;j<mrtg_images.length;j++){
+                var mrtg_image=mrtg_images[j];
+                var index=$(mrtg_image).attr('index');
+                if( value===index){
+                    $(mrtg_label).append(mrtg_image)
+                    //mrtg_image.remove()
+                }
+            }
+        }
+        
+        //元素包裹
+        $(".persion-format").wrap('<div class="col-lg-2"></div>');
+        $(".domain-format").wrap('<div class="col-lg-3"></div>');
+        $(".ip-format").wrap('<div class="col-lg-3"></div>');
     })
     </script>
   </head>
@@ -43,6 +65,7 @@
     <div class="col-lg-8 col-md-offset-2">
       <form role="form" action="{% url 'reports:create' %}" method="post" >
       {% csrf_token %}
+      
       {{ form.non_field_errors }}
       <div class="form-group">
          <div class="row"><div class="col-lg-2">
@@ -50,7 +73,7 @@
          </div></div>
          <div class="row">
          <div class="col-lg-2">
-           <label for="{{ form.title.id_for_label }}">标题</label>
+           <label for="{{ form.title.id_for_label }}">标题:</label>
          </div>
          <div class="col-lg-6">
             {{ form.title }}
@@ -58,6 +81,89 @@
          </div>
        </div>
       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.persion.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.persion.id_for_label }}">值班人员:</label>
+         </div>
+         <!--div class="col-lg-3"-->
+            {{form.persion}}
+         <!--/div-->
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.start_time.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.start_time.id_for_label }}">开始时间:</label>
+         </div>
+         <div class="col-lg-3">
+            {{form.start_time}}
+         </div>
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.end_time.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.end_time.id_for_label }}">结束时间:</label>
+         </div>
+         <div class="col-lg-3">
+            {{form.end_time}}
+         </div>
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.domain.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.domain.id_for_label }}">攻击域名:</label>
+         </div>
+         <!--div class="col-lg-3"-->
+            {{form.domain}}
+         <!--/div-->
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.ip.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.ip.id_for_label }}">来源IP:</label>
+         </div>
+         <!--div class="col-lg-3"-->
+            {{form.ip}}
+         <!--/div-->
+         </div>
+       </div>
+       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.abstract.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.abstract.id_for_label }}">摘要:</label>
+         </div>
+         <div class="col-lg-8">
+            {{form.abstract}}
+         </div>
+         </div>
+       </div>
        
        <div class="form-group">
          <div class="row"><div class="col-lg-2">
@@ -73,6 +179,7 @@
          </div>
        </div>
        
+       
        <div class="form-group">
          <div class="row"><div class="col-lg-2">
          {{ form.mrtg_image.errors }}
@@ -81,16 +188,40 @@
          <div class="col-lg-2">
            <label for="{{ form.mrtg_image.id_for_label }}">选择MRTG图像:</label>
          </div>
-         <div class="col-lg-8">
+         <div class="col-lg-8" id="mrtg_select_image">
             {% for mii in form.mrtg_image %}
                 {{mii}}
-                {{forloop.counter}}
-                
-                <img src="{{dnsla_image_prefix}}{{ mrtg_image_dic."{{ forloop.counter }}" }}" class="img-thumbnail"></img>
+            {% endfor %}
+            
+            {% for key,value in mrtg_image_dic.items %}
+                <img src="{{mrtg_image_prefix}}{{value}}" class="img-thumbnail" index="{{key}}"></img>
             {% endfor %}
          </div>
          </div>
        </div>
+       
+       <div class="form-group">
+         <div class="row"><div class="col-lg-2">
+         {{ form.mrtg_image.errors }}
+         </div></div>
+         <div class="row">
+         <div class="col-lg-2">
+           <label for="{{ form.mrtg_image.id_for_label }}">选择DNSLA图像:</label>
+         </div>
+         <div class="col-lg-8" id="mrtg_select_image">
+            {% for mii in form.dnsla_image %}
+                {{mii}}
+            {% endfor %}
+            
+            {% for key,value in mrtg_dnsla_dic.items %}
+                <img src="{{mrtg_dnsla_prefix}}{{value}}" class="img-thumbnail" index="{{key}}"></img>
+            {% endfor %}
+         </div>
+         </div>
+       </div>
+       
+       
+       
        <button type="submit" value="提交" class="btn btn-default">提交</button>
     </form>
     

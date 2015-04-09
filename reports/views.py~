@@ -11,29 +11,13 @@ from django.core.files import File
 from generic import *
 
 # Create your views here.
-
-
 def index(request):
     latest_report_list = Report.objects.order_by('-create_time')[:10]
     context = {'latest_report_list': latest_report_list}
     return render(request, 'reports/index.html', context)
 
-    title=models.CharField(max_length=50)
-    create_time=models.DateTimeField()
-    #sunyuwu#=#liumingxing
-    persion=models.CharField(max_length=100)
-    abstract=models.CharField(max_length=1000)
-    
-    type=models.IntegerField(default=1)
-    #last_time=models.TimeField()
-    start_time=models.DateTimeField()
-    end_time=models.DateTimeField()
-    max_qps=models.IntegerField(default=0)
-    is_end=models.BooleanField(default=True)
-
-
-
-
+mrtg_image_dic={}
+dnsla_image_dic={}
 def create(request):
     """
     #为了保存image外键,建立report
@@ -58,31 +42,113 @@ def create(request):
     })
     """
     # if this is a POST request we need to process the form data
+    
+    global mrtg_image_dic
+    global dnsla_image_dic
     if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
-        pdb.set_trace()
+        #从request的数据中,初始化一个表单
         form = ReportForm(request.POST)
-        #form['title'].label_tag(attrs={'class':'form-control'})
-        #form['title'].css_classes('form-control')
-        #check whether it's valid:
-        
+        pdb.set_trace()
+        #表单数据验证
         if form.is_valid():
-
+            
+            #验证成功,存入数据库
+            ret=save_form(form)
+            
+            pdb.set_trace()
+            view(request,ret['report_id'])
             return HttpResponseRedirect('/reports/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
-        data={
-        'mrtg_image':[('leve1', '差评'),('leve2', '中评'),('leve3', '1好评')]
-        }
-        #form = ReportForm(initial={'mrtg_image': ['leve1','leve2']})
+        #生成一个空的表单,非绑定
         form = ReportForm()
-        mrtg_image_dic={1:"abc",2:"e3f"}
-        #pdb.set_trace()
-        return render(request, 'reports/create.html', {'form': form,'mrtg_image_list':mrtg_image_list})
-
-    return render(request, 'reports/create.html', {'form': form})
+        #生成全局图像字典变量
+        mrtg_image_dic=get_mrtg_image()
+        dnsla_image_dic=dnsla_mrtg_image()
+        
     
+    
+    return render(request, 'reports/create.html', {
+            'form': form,
+            'mrtg_image_dic':mrtg_image_dic,
+            'mrtg_image_prefix':mrtg_image_prefix,
+            'dnsla_image_dic':dnsla_image_dic,
+            'dnsla_image_prefix':dnsla_image_prefix
+            })
+    
+def save_form(form):
+    pdb.set_trace()
+    ret={'success':True,'error_message':'','report_id':0}
+    try:
+        start_time=form.cleaned_data['start_time']
+        end_time=form.cleaned_data['end_time']
+
+        report=Report(
+            title=form.cleaned_data['title'],
+            create_time=datetime.datetime.now(),
+            persion=form.cleaned_data['persion'],
+            abstract=form.cleaned_data['abstract'],
+            process=form.cleaned_data['process'],
+            start_time=start_time,
+            end_time=end_time
+        )
+        report.save()
+    except Exception,e:
+        ret={'success':False,'error_message':str(e)}
+        return ret
+    #处理domain
+    for domain in form.cleaned_data['domain'].split(':::'):
+        if domain !='':
+            try:
+                dom=Domain.objects.get(domain_name=domain)
+            except Domain.DoesNotExist:
+                dom=Domain(domain_name=domain)
+            try:
+                #whois 查询
+                import pythonwhois
+                result=pythonwhois.get_whois(domain)
+                dom.status=';'.join(result['status'])
+                dom.registrant=result['contacts']['registrant']['name']
+                dom.save()
+                dom.report.add(report)
+            except Exception,e:
+                ret={'success':False,'error_message':str(e)}
+                return ret
+
+    for ip in form.cleaned_data['ip'].split(':::'):
+        if ip !='':
+            try:
+                ip_obj=Ip.objects.get(addr=ip)
+            except Ip.DoesNotExist:
+                ip_obj=Ip(addr=ip)
+                ip_obj.save()
+                ip_obj.report.add(report)
+
+    for i in form.cleaned_data['mrtg_image']:
+        if mrtg_image_dic.has_key(str(i)):  
+            try:
+                img_name=mrtg_image_dic[str(i)]
+                image=Mrtg_images(report=report,picture=img_name)
+                image.save()
+                
+                #TODO nodes
+            except Exception,e:
+                ret={'success':False,'error_message':str(e)}
+                return ret
+    for i in form.cleaned_data['dnsla_image']:
+        if dnsla_image_dic.has_key(str(i)):  
+            try:
+                img_name=dnsla_image_dic[str(i)]
+                image=Dnsla_images(report=report,picture=img_name)
+                image.save()
+            except Exception,e:
+                ret={'success':False,'error_message':str(e)}
+                return ret
+
+    #TODO nodes
+    ret['report_id':report.id]
+    return ret
 
 def new(request):
     pdb.set_trace()
@@ -91,7 +157,7 @@ def view(request,report_id):
     report = get_object_or_404(Report, pk=report_id)
     #pdb.set_trace()
     create_time=str(report.create_time.date())
-    persions=report.persion.split('#=#')
+    persions=report.persion.split(':::')
     
     year=report.start_time.year
     month=report.start_time.month
@@ -147,14 +213,14 @@ def get_mrtg_image():
     
     rrd_files=os.popen("find "+ rrd_file_path +" -name *.rrd").read().strip().split('\n')
 
-    mrtg_image_list=[]
+    mrtg_image_dic={}
     for rrd_file in rrd_files:
         
         image_file_name_key=rrd_file.replace(os.path.join(rrd_file_path,'cnqps_'),'').replace('.rrd','')
         try:
             #image_file_num=name_to_num[image_file_name_key]
-            node=Node.objects.get(abbr='image_file_name_key').nb
-            image_file_num=node.nb
+            node=Node.objects.get(abbr=image_file_name_key)
+            image_file_num=str(node.nb)
             node_name=node.name
         except:
             image_file_num='-1'
@@ -187,18 +253,12 @@ def get_mrtg_image():
 			     GPRINT:value2:LAST:"%%10.2lf %%Sb/S"        \
 			     COMMENT:" \\n"                             \
 			     COMMENT:"Last update\\: %s"'%(rrd_tool,image_file_path,start_time,end_time,rrd_file,rrd_file,rrd_file,rrd_file,str(comment_now)))
-        """
-        image=Mrtg_images()
-        image.picture=image_file_name
-        image.report=report
-        image.save()
-        image.name=node_name
-        mrtg_image_list.append(image)
-        """
-        mrtg_image_list.append([image_file_num,image_file_name])
-    return mrtg_image_list
+        
+        mrtg_image_dic[image_file_num]=image_file_name
+    return mrtg_image_dic
 
-
+def dnsla_mrtg_image():
+    pass
 
 
 def sendmail(request):
