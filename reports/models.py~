@@ -209,13 +209,13 @@ class ReportForm(forms.Form):
         required=False,
         choices=mrtgChoices,
         label='MRTG图像',
-        widget=forms.CheckboxSelectMultiple
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control mrtg-format'})
     )
     dnsla_image=forms.TypedMultipleChoiceField(
         required=False,
         choices=dnslaChoices,
         label='DNSLA图像',
-        widget=forms.CheckboxSelectMultiple
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control dnsla-format'})
     )
 
 

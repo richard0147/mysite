@@ -132,7 +132,22 @@ def save_form(form):
                 image=Mrtg_images(report=report,picture=img_name)
                 image.save()
                 
-                #TODO nodes
+                try:
+                    #start_time<end_time<end_time
+                    pdb.set_trace()
+                    node_qps=Qps.objects.filter(node_id=int(i),end_time__gt=start_time,end_time__lt=end_time)
+                    for nq in node_qps:
+                        inqps_list=[]
+                        outqps_list=[]
+                        inqps_list.append(nq.in_qps)
+                        outqos_list.append(nq.out_qps)
+                        #TODO nodes
+                    max_qps=1
+                    average_qps=1
+                    att=Attact_node(report=report,nb=int(i))
+                    
+                except Exception,e:
+                    pass
             except Exception,e:
                 ret={'success':False,'error_message':str(e)}
                 return ret

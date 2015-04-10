@@ -187,3 +187,17 @@
     </div>
   </body>
 </html>
+
+
+
+
+
+
+
+            {% for mii in form.dnsla_image %}
+                {{mii}}
+            {% endfor %}
+            
+            {% for key,value in mrtg_dnsla_dic.items %}
+                <img src="{{mrtg_dnsla_prefix}}{{value}}" class="img-thumbnail dnsla-format" index="{{key}}"></img>
+            {% endfor %}

@@ -30,8 +30,10 @@
             stepSecond: 1
         })
         
-        var mrtg_labels=$("#mrtg_select_image").children('label');
-        var mrtg_images=$("#mrtg_select_image").children('img');
+        //var mrtg_labels=$("#mrtg_select_image").children('label');
+        var mrtg_labels=$("input.mrtg-format").parent('label');
+        //var mrtg_images=$("#mrtg_select_image").children('img');
+        var mrtg_images=$("img.mrtg-format");
 
         for(var i=0;i<mrtg_labels.length;i++){
             var mrtg_label=mrtg_labels[i];
@@ -51,6 +53,8 @@
         $(".persion-format").wrap('<div class="col-lg-2"></div>');
         $(".domain-format").wrap('<div class="col-lg-3"></div>');
         $(".ip-format").wrap('<div class="col-lg-3"></div>');
+        $("input.mrtg-format").parent('label').wrap('<div class="col-lg-3"></div>');
+        
     })
     </script>
   </head>
@@ -96,7 +100,7 @@
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.start_time.errors }}
          </div></div>
          <div class="row">
@@ -124,7 +128,7 @@
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.domain.errors }}
          </div></div>
          <div class="row">
@@ -138,7 +142,7 @@
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.ip.errors }}
          </div></div>
          <div class="row">
@@ -166,7 +170,7 @@
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.process.errors }}
          </div></div>
          <div class="row">
@@ -181,42 +185,42 @@
        
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.mrtg_image.errors }}
          </div></div>
-         <div class="row">
-         <div class="col-lg-2">
+         <div class="row"><div class="col-lg-2">
            <label for="{{ form.mrtg_image.id_for_label }}">选择MRTG图像:</label>
+         </div></div>
+         <div class="row">
+        {% for mii in form.mrtg_image %}
+            {{mii}}
+            {% if forloop.counter|divisibleby:"4" %}.
          </div>
-         <div class="col-lg-8" id="mrtg_select_image">
-            {% for mii in form.mrtg_image %}
-                {{mii}}
-            {% endfor %}
+         <div class="row">
+            {% endif %}
             
-            {% for key,value in mrtg_image_dic.items %}
-                <img src="{{mrtg_image_prefix}}{{value}}" class="img-thumbnail" index="{{key}}"></img>
-            {% endfor %}
+        {% endfor %}
          </div>
-         </div>
+         {% for key,value in mrtg_image_dic.items %}
+            <img src="{{mrtg_image_prefix}}{{value}}" class="img-thumbnail mrtg-format" index="{{key}}"></img>
+         {% endfor %}
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.mrtg_image.errors }}
          </div></div>
-         <div class="row">
-         <div class="col-lg-2">
+         <div class="row"><div class="col-lg-2">
            <label for="{{ form.mrtg_image.id_for_label }}">选择DNSLA图像:</label>
-         </div>
-         <div class="col-lg-8" id="mrtg_select_image">
+         </div></div>
+         <div class="row">
             {% for mii in form.dnsla_image %}
                 {{mii}}
             {% endfor %}
             
             {% for key,value in mrtg_dnsla_dic.items %}
-                <img src="{{mrtg_image_prefix}}{{value}}" class="img-thumbnail" index="{{key}}"></img>
+                <img src="{{mrtg_dnsla_prefix}}{{value}}" class="img-thumbnail dnsla-format" index="{{key}}"></img>
             {% endfor %}
-         </div>
          </div>
        </div>
        
