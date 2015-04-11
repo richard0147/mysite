@@ -29,7 +29,7 @@
 		    {% endfor %}
 		  </b>
 		</p>
-		<p id="report-time"><b>故障时间：{{year}}年{{month}}月{{day}}日{{start_time}}–{{end_time}}</b></p>
+		<p id="report-time"><b>故障时间：{{year}}年{{month}}月{{day}}日{{start_time}}–{{end_day}}日{{end_time}}</b></p>
 		<p id="report-type"><b>故障类型：域名、网络、安全</b></p>
 		<p id="report-area"><b>影响范围：
 		    {% for node in attact_nodes %}
@@ -69,20 +69,32 @@
 		  <table class="table table-hover">
 		    <tbody>
 		    {% for process in processes %}
+		      {% ifnotequal process '' %}
 				<tr>
-				 <td>{{process.time}}</td>
-				 <td>{{process.content}}</td>
+				 <td>{{process}}</td>
 				</tr>
+              {% endifnotequal %}
             {% endfor %}
             </tbody>
           </table>
         </div>
 		
 		<h3 id="report-mrtg-image"><b>附录一	MRTG截图</b></h3>
-		{% for mrtg_image in mrtg_images %}
+		
+		<div class="row">
+		{% for an in attact_nodes %}
 		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
-		    <img src="{{mrtg_image.picture.url}}" class="img-thumbnail"></img>
+		  <div  class="col-lg-4">
+		    <p>{{an.name}}<p>
+		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
+		  </div>
+		{% if forloop.counter|divisibleby:"3" %}
+		</div>
+        <div class="row">
+        {% endif %}
 		{% endfor %}
+		</div>
+		
 		<h3 id="report-dnsla-image"><b>附录二	部分dnsla分析图像</b></h3>
 		{% for dnsla_image in dnsla_images %}
 		    <img src="{{dnsla_image.picture.url}}" class="img-thumbnail"></img>

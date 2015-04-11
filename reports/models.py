@@ -20,9 +20,6 @@ class Report(models.Model):
         return self.title
 
 
-class Mrtg_images(models.Model):
-    report=models.ForeignKey(Report,related_name='mrtg_images')
-    picture=models.ImageField(upload_to='mrtg')
 
 class Dnsla_images(models.Model):
     report=models.ForeignKey(Report,related_name='dnsla_images')
@@ -38,6 +35,7 @@ class Attact_node(models.Model):
     nb=models.IntegerField()
     max_qps=models.IntegerField()
     average_qps=models.IntegerField()
+    picture=models.ImageField(upload_to='mrtg')
 
 class Domain(models.Model):
     report=models.ManyToManyField(Report,related_name='domains')
@@ -77,14 +75,21 @@ from django import forms
 from django.forms import widgets
 
 class ContactForm(forms.Form):
-    subject = forms.CharField(max_length=100)
-    message = forms.CharField(widget=forms.Textarea)
-    sender = forms.EmailField()
-    cc_myself = forms.BooleanField(required=False)
+    subject = forms.CharField(max_length=100,widget=forms.TextInput(attrs={'class': 'form-control'}))
+    message = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control'}))
+    sender = forms.EmailField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    cc_myself =forms.BooleanField(required=False)
+
+
 
 class processWidget(widgets.MultiWidget):
     def __init__(self, attrs=None):
         _widgets = (
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
             widgets.TextInput(attrs=attrs),
             widgets.TextInput(attrs=attrs),
             widgets.TextInput(attrs=attrs),
@@ -107,6 +112,11 @@ class ProcessMultiField(forms.MultiValueField):
             forms.CharField(max_length=400),
             forms.CharField(max_length=400),
             forms.CharField(max_length=400),
+            forms.CharField(max_length=400),
+            forms.CharField(max_length=400),
+            forms.CharField(max_length=400),
+            forms.CharField(max_length=400),
+            forms.CharField(max_length=400),
             forms.CharField(max_length=300),
         )
         super(ProcessMultiField, self).__init__(fields, *args, **kwargs)
@@ -121,9 +131,9 @@ class PersionWidget(widgets.MultiWidget):
         _widgets = (
             widgets.TextInput(attrs=attrs),
             widgets.TextInput(attrs=attrs),
-            widgets.HiddenInput(attrs=attrs),
-            widgets.HiddenInput(attrs=attrs),
-            widgets.HiddenInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
+            widgets.TextInput(attrs=attrs),
         )
         super(PersionWidget, self).__init__(_widgets, attrs)
 
@@ -202,7 +212,7 @@ class ReportForm(forms.Form):
     process=ProcessMultiField(
         required=False,
         label='处理过程',
-        widget=processWidget(attrs={'class': 'form-control','placeholder':'请输入处理过程'})
+        widget=processWidget(attrs={'class': 'form-control process-format','placeholder':'请输入处理过程'})
     )
     
     mrtg_image=forms.TypedMultipleChoiceField(

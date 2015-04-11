@@ -34,7 +34,7 @@
         var mrtg_labels=$("input.mrtg-format").parent('label');
         //var mrtg_images=$("#mrtg_select_image").children('img');
         var mrtg_images=$("img.mrtg-format");
-
+        //将图片放置到制定的元素位置
         for(var i=0;i<mrtg_labels.length;i++){
             var mrtg_label=mrtg_labels[i];
             //alert(mrtg_label);
@@ -49,13 +49,136 @@
             }
         }
         
-        //元素包裹
-        $(".persion-format").wrap('<div class="col-lg-2"></div>');
-        $(".domain-format").wrap('<div class="col-lg-3"></div>');
-        $(".ip-format").wrap('<div class="col-lg-3"></div>');
+        
+        //元素包裹-分行
+        //row,col,offset
+        row_add($(".persion-format"),3,'2','2');
+        row_add($(".domain-format"),2,'3','2');
+        row_add($(".ip-format"),2,'3','2');
+        row_add($(".process-format"),1,'8','2');
+        
+        //wrap在每个被选元素的周围用 HTML 元素包裹起来
         $("input.mrtg-format").parent('label').wrap('<div class="col-lg-3"></div>');
         
+        
+        
+        var show_persion_nb="{{show_persion_nb}}";
+        var show_domain_nb="{{show_domain_nb}}";
+        var show_ip_nb="{{show_ip_nb}}";
+        var show_process_nb="{{show_process_nb}}";
+        
+        if(typeof(show_persion_nb) == "undefined" || typeof(show_persion_nb]) == "null" || show_persion_nb == null || show_persion_nb == ""){
+            show_persion_nb=2
+        }
+        if(typeof(show_domain_nb) == "undefined" || typeof(show_domain_nb]) == "null" || show_domain_nb == null || show_domain_nb == ""){
+            show_domain_nb=2
+        }
+        if(typeof(show_ip_nb) == "undefined" || typeof(show_ip_nb]) == "null" || show_ip_nb == null || show_ip_nb == ""){
+            show_ip_nb=2
+        }
+        if(typeof(show_process_nb) == "undefined" || typeof(show_process_nb]) == "null" || show_process_nb == null || show_process_nb == ""){
+            show_process_nb=2
+        }
+        //元素隐藏
+        hide_ele($(".persion-format"),Number(show_persion_nb)+1);
+        hide_ele($(".domain-format"),Number(show_domain_nb)+1);
+        hide_ele($(".ip-format"),Number(show_ip_nb)+1);
+        hide_ele($(".process-format"),Number(show_process_nb)+1);
+        
+        //将添加按钮放置在最后一个显示元素的后面
+        put_btn_after_show_ele($(".persion-format"),"btn-persion");
+        put_btn_after_show_ele($(".domain-format"),"btn-domain");
+        put_btn_after_show_ele($(".ip-format"),"btn-ip");
+        put_btn_after_show_ele($(".process-format"),"btn-process");
     })
+    function put_btn_after_show_ele(eles,btn_id){
+        var divs=$(eles).parent('div');
+        var set_btn=false;
+        for (i=0;i<eles.length;i++){
+            if ($(eles[i]).is(":hidden")){
+                $(divs[i-1]).after($("#"+btn_id))
+                set_btn=true;
+                break;
+            }
+        }
+        
+        if (set_btn===false){
+            $(divs[divs.length-1]).after($("#"+btn_id));
+        }
+        return;
+        
+    }
+    
+    //row_num:每行元素的个数
+    function row_add(eles,row_num,col_num,offset){
+        //先添加列包裹
+        $(eles).wrap('<div class="col-lg-'+col_num+'"></div>');
+        
+        //找到父div标签
+        var divs=$(eles).parent('div');
+        
+        $(divs[0]).attr('class','col-lg-'+offset);
+        var i=0;
+        //第一行不偏移!
+        var first_line=true;
+        
+        for (i=0;i+row_num<divs.length;){
+            if (first_line===false){
+                var rnb=row_num;
+            }else{
+                var rnb=row_num+1;
+            }
+            
+            var row=new Array();
+            for(var j=0;j<rnb;j++){
+                row[j]=divs[i+j];
+            }
+            i+=rnb;
+            
+            //添加行包裹
+            //wrapAll在所有被选元素的周围用 HTML 元素包裹起来
+            $(row).wrapAll('<div class="row"></div>');
+            if (first_line===false){
+                $(row[0]).addClass('col-lg-offset-'+offset);
+            }else{
+                first_line=false;
+            }
+        }
+        
+        //收尾处理
+        var row=new Array();
+        for (var j=0;i+j<divs.length;j++){
+            row[j]=divs[i+j];
+        }
+        $(row).wrapAll('<div class="row"></div>');
+        if (first_line===false){
+            $(row[0]).addClass('col-lg-offset-'+offset);
+        }
+        return
+    }
+    
+    function hide_ele(eles,num){
+        for (var i=0;i<eles.length;i++){
+            if (i>=num){
+                $(eles[i]).hide()
+            }
+        }
+        return;
+    }
+    
+
+    function show_one_class_ele(class_name,btn_id){
+        var eles=$("."+class_name);
+        for (var i=0;i<eles.length;i++){
+            if ($(eles[i]).is(":hidden")){
+                $(eles[i]).show();
+                break;
+            }
+        }
+        put_btn_after_show_ele(eles,btn_id);
+        return;
+    }
+    
     </script>
   </head>
   <body>
@@ -66,8 +189,13 @@
     </div>
     
     <div class="row">
-    <div class="col-lg-8 col-md-offset-2">
+    <div class="col-lg-8 col-lg-offset-2">
+    {% if is_form %}
+      {% if is_create %}
       <form role="form" action="{% url 'reports:create' %}" method="post" >
+      {% else %}
+      <form role="form" action="{% url 'reports:change' report_id %}" method="post" >
+      {% endif %}
       {% csrf_token %}
       
       {{ form.non_field_errors }}
@@ -89,13 +217,15 @@
          <div class="row"><div class="col-lg-2">
          {{ form.persion.errors }}
          </div></div>
-         <div class="row">
-         <div class="col-lg-2">
-           <label for="{{ form.persion.id_for_label }}">值班人员:</label>
-         </div>
+            <label class="persion-format" for="{{ form.persion.id_for_label}}">值班人员:</label>
          <!--div class="col-lg-3"-->
             {{form.persion}}
          <!--/div-->
+         <div class="col-lg-1" id="btn-persion">
+             <!--span class="glyphicon glyphicon-plus-sign" aria-hidden="true" onclick="add_persion()"></span-->
+             <button  type="button" class="btn btn-default" onclick="show_one_class_ele('persion-format','btn-persion')">
+               <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+             </button>
          </div>
        </div>
        
@@ -131,13 +261,14 @@
          <div class="row"><div class="col-lg-12">
          {{ form.domain.errors }}
          </div></div>
-         <div class="row">
-         <div class="col-lg-2">
-           <label for="{{ form.domain.id_for_label }}">攻击域名:</label>
-         </div>
+            <label class="domain-format" for="{{ form.domain.id_for_label }}">攻击域名:</label>
          <!--div class="col-lg-3"-->
             {{form.domain}}
          <!--/div-->
+         <div class="col-lg-1" id="btn-domain">
+             <button type="button" class="btn btn-default" onclick="show_one_class_ele('domain-format','btn-domain')">
+               <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+             </button>
          </div>
        </div>
        
@@ -145,13 +276,14 @@
          <div class="row"><div class="col-lg-12">
          {{ form.ip.errors }}
          </div></div>
-         <div class="row">
-         <div class="col-lg-2">
-           <label for="{{ form.ip.id_for_label }}">来源IP:</label>
-         </div>
+           <label class="ip-format" for="{{ form.ip.id_for_label }}">来源IP:</label>
          <!--div class="col-lg-3"-->
             {{form.ip}}
          <!--/div-->
+         <div class="col-lg-1" id="btn-ip">
+             <button type="button" class="btn btn-default" onclick="show_one_class_ele('ip-format','btn-ip')">
+               <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+             </button>
          </div>
        </div>
        
@@ -173,18 +305,21 @@
          <div class="row"><div class="col-lg-12">
          {{ form.process.errors }}
          </div></div>
-         <div class="row">
-         <div class="col-lg-2">
-           <label for="{{ form.process.id_for_label }}">处理过程:</label>
-         </div>
-         <div class="col-lg-8">
-            {{ form.process }}
-         </div>
-         </div>
+           <label class="process-format" for="{{ form.process.id_for_label }}">处理过程:</label>
+           {{ form.process }}
+           <div class="col-lg-1" id="btn-process">
+             <button type="button" class="btn btn-default" onclick="show_one_class_ele('process-format','btn-process')">
+               <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>添加
+             </button>
+          </div>
        </div>
        
        
-       <div class="form-group">
+       
+       
+       
+      {% if is_create %}
+      <div class="form-group">
          <div class="row"><div class="col-lg-12">
          {{ form.mrtg_image.errors }}
          </div></div>
@@ -192,14 +327,13 @@
            <label for="{{ form.mrtg_image.id_for_label }}">选择MRTG图像:</label>
          </div></div>
          <div class="row">
-        {% for mii in form.mrtg_image %}
-            {{mii}}
-            {% if forloop.counter|divisibleby:"4" %}.
+            {% for mii in form.mrtg_image %}
+              {{mii}}
+            {% if forloop.counter|divisibleby:"4" %}
          </div>
          <div class="row">
             {% endif %}
-            
-        {% endfor %}
+         {% endfor %}
          </div>
          {% for key,value in mrtg_image_dic.items %}
             <img src="{{mrtg_image_prefix}}{{value}}" class="img-thumbnail mrtg-format" index="{{key}}"></img>
@@ -223,11 +357,34 @@
             {% endfor %}
          </div>
        </div>
-       
-       
-       
+      {% else %}
+        <div class="row"><div class="col-lg-2">
+           <label for="{{ form.mrtg_image.id_for_label }}">MRTG图像:</label>
+        </div></div>
+        <div class="row">
+		{% for an in attact_nodes %}
+		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
+		  <div  class="col-lg-3">
+		    <p>{{an.name}}<p>
+		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
+		  </div>
+		{% if forloop.counter|divisibleby:"4" %}
+		</div>
+        <div class="row">
+        {% endif %}
+		{% endfor %}
+		</div>
+      {% endif %}
        <button type="submit" value="提交" class="btn btn-default">提交</button>
     </form>
+    
+    {% else %}
+      {% if success %}
+        <p>{{success}}</p>
+      {% else %}
+        <p>{{error_message}}</p>
+      {% endif %}
+    {% endif %}
     
     </div>
     </div>

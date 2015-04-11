@@ -4,8 +4,6 @@
 rrd_tool="/usr/bin/rrdtool"
 rrd_file_path="/home/richard/develop/mysite/mrtg"
 mrtg_image_save_dir="/home/richard/develop/mysite/media/mrtg/"
-mrtg_image_prefix="/media/mrtg/"
-dnsla_image_prefix="/media/dnsla/"
 
 #全局字典变量
 name_to_num={
