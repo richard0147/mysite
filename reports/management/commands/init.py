@@ -5,7 +5,7 @@ from reports.models import *
 
 
 class Command(BaseCommand):
-    def initdb(self, *args, **options):
+    def handle(self, *args, **options):
         #nodes
         node=Node(nb=0,abbr='sum',name='SUM')
         node.save()

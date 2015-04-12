@@ -9,7 +9,8 @@ import pdb
 import datetime,time,os,sys
 from django.core.files import File
 from generic import *
-import pythonwhois
+#import pythonwhois
+import urllib
 
 mrtg_image_dic={}
 dnsla_image_dic={}
@@ -53,7 +54,8 @@ def create(request):
         form = ReportForm()
         #生成全局图像字典变量
         mrtg_image_dic=get_mrtg_image()
-        dnsla_image_dic=dnsla_mrtg_image()
+        #dnsla_image_dic=dnsla_mrtg_image()
+        #dnsla_image_dic=dnsla_mrtg_image()
         
     
     
@@ -396,8 +398,26 @@ def get_mrtg_image():
         mrtg_image_dic[image_file_num]="/media/mrtg/"+image_file_name
     return mrtg_image_dic
 
+def dnsla_get_json_data(url,nodeid,topn):
+    #TODO
+    #1,汇总所有节点
+    #2,
+    #目前以1号节点为例
+    f = urllib.urlopen(url % str(nodeid))
+    #TODO 转换成json字符串
+    json_data=f.read()
+    """
+    this_type=json_data['type']
+    rank={}
+    for i in xrange(0,topn):
+        this_rank=json_data['rank'][i]
+        rank_data=this_rank[this_type]
+        rank_count=this_rank['count']
+    """
+    return rank[0:topn]
+    
 def dnsla_mrtg_image():
-    pass
+    dnsla_get_json_data(url=dnsla_dname_url,nodeid=1,topn=3)
 
 
 def sendmail(request):
@@ -408,6 +428,7 @@ def sendmail(request):
         # check whether it's valid:
         if form.is_valid():
             #pdb.set_trace()
+            data={"is_success":True,"error_message":'','create_form':False}
             from django.core.mail import send_mail
             subject = form.cleaned_data['subject']
             text = form.cleaned_data['message']

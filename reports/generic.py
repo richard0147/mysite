@@ -4,6 +4,8 @@
 rrd_tool="/usr/bin/rrdtool"
 rrd_file_path="/home/richard/develop/mysite/mrtg"
 mrtg_image_save_dir="/home/richard/develop/mysite/media/mrtg/"
+dnsla_dname_url="http://218.241.118.153:8090/Index/Show/getDnameRankById/nodeid/%s"
+dnsla_ip_url="http://218.241.118.153:8090/Index/Show/getAddrRankById/nodeid/%s"
 
 #全局字典变量
 name_to_num={

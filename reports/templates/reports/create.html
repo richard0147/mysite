@@ -17,6 +17,65 @@
 	  <script type="text/javascript" src="{% static 'reports/js/jquery-ui-1.8.17.custom.min.js' %}"></script>
 	  <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-addon.js' %}"></script>
       <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-zh-CN.js' %}"></script>
+      <script src="http://echarts.baidu.com/build/dist/echarts.js"></script>
+      <script type="text/javascript">
+        // ECharts路径配置
+        require.config({
+            paths: {
+                echarts: 'http://echarts.baidu.com/build/dist'
+            }
+        });
+        
+        // 使用
+        require(
+            [
+                'echarts',
+                'echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
+            ],
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('echartsmain')); 
+                var option = {
+                    title:{
+                        text:'域名',
+                        x:'center'
+                    },
+                    tooltip: {
+                        trigger:'axis'
+                    },
+                    /*legend: {
+                        data:['域名']
+                    },*/
+                    xAxis : [
+                        {
+                            type : 'value'
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'category',
+                            data : ["molss.gov.cn.","tira.cn.","bta.net.cn.","people.com.cn.","3g.cn.","4.cn.","sinaimg.cn.",
+                            "kuwo.cn.","zol-img.com.cn.","zhongchenggongyu.cn","lefeng.cn.","sina.com.cn.","online.sh.cn.",
+                            "cdnetdns.cn.","in-addr.cn.","ce.cn.","cnnic.cn.","yihaodian.com.cn.","diditaxi.com.cn.","dns.com.cn",
+                            "t.cn","mobage.com.cn.","ccgslb.com.cn.","dns.cn.","dynamic.163data.com.cn.","uc.cn.","cnradio.com.cn.",
+                            "360.cn.","teny.cn.","IN-ADDR.ARPA."]
+                        }
+                    ],
+                    series : [
+                        {
+                            "name":"",
+                            "type":"bar",
+                            "data":[10,10,10,10,10,10,10,10,11,11,11,11,11,11,12,12,12,12,13,13,13,13,13,13, 66, 51, 50, 46, 36,689]
+                        }
+                    ]
+                };
+        
+                // 为echarts对象加载数据 
+                myChart.setOption(option); 
+            }
+        );
+      </script>
+    
     <script type="text/javascript">
     $(function () {
         $(".ui_timepicker").datetimepicker({
@@ -317,7 +376,7 @@
        
        
        
-       
+      <hr>
       {% if is_create %}
       <div class="form-group">
          <div class="row"><div class="col-lg-12">
@@ -340,23 +399,8 @@
          {% endfor %}
        </div>
        
-       <div class="form-group">
-         <div class="row"><div class="col-lg-12">
-         {{ form.mrtg_image.errors }}
-         </div></div>
-         <div class="row"><div class="col-lg-2">
-           <label for="{{ form.mrtg_image.id_for_label }}">选择DNSLA图像:</label>
-         </div></div>
-         <div class="row">
-            {% for mii in form.dnsla_image %}
-                {{mii}}
-            {% endfor %}
-            
-            {% for key,value in mrtg_dnsla_dic.items %}
-                <img src="{{mrtg_dnsla_prefix}}{{value}}" class="img-thumbnail dnsla-format" index="{{key}}"></img>
-            {% endfor %}
-         </div>
-       </div>
+       
+      {# 修改模式下不支持选择图片功能 #}
       {% else %}
         <div class="row"><div class="col-lg-2">
            <label for="{{ form.mrtg_image.id_for_label }}">MRTG图像:</label>
@@ -375,6 +419,28 @@
 		{% endfor %}
 		</div>
       {% endif %}
+      {# dnsla图片不支持选择,目前展示两张图片 #}
+      <hr>
+      <div class="form-group">
+         <div class="row"><div class="col-lg-12">
+         {{ form.mrtg_image.errors }}
+         </div></div>
+         <div class="row"><div class="col-lg-2">
+           <label for="{{ form.mrtg_image.id_for_label }}">DNSLA图像:</label>
+         </div></div>
+         <div class="row">
+            {% for mii in form.dnsla_image %}
+                {{mii}}
+            {% endfor %}
+            
+            {% for key,value in mrtg_dnsla_dic.items %}
+                <img src="{{mrtg_dnsla_prefix}}{{value}}" class="img-thumbnail dnsla-format" index="{{key}}"></img>
+            {% endfor %}
+            <div class="col-lg-6" id="echartsmain" style="height:600px">
+              
+            </div>
+         </div>
+       </div>
        <button type="submit" value="提交" class="btn btn-default">提交</button>
     </form>
     
