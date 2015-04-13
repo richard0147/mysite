@@ -96,6 +96,7 @@ require(
                 }
             ]
         };
+        
         chart1.setOption(option1);       
     }
 );

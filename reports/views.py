@@ -417,7 +417,11 @@ def dnsla_get_json_data(url,nodeid,topn):
     return rank[0:topn]
     
 def dnsla_mrtg_image():
-    dnsla_get_json_data(url=dnsla_dname_url,nodeid=1,topn=3)
+    for i in xrange(0,32):
+        if i==0 or i==2:
+            pass
+        data=dnsla_get_json_data(url=dnsla_dname_url,nodeid=1,topn=10)
+        
 
 
 def sendmail(request):
@@ -446,7 +450,7 @@ def sendmail(request):
                 from email.mime.text import MIMEText  
                 from email.mime.image import MIMEImage  
                 from email.mime.multipart import MIMEMultipart 
-                MAIL_LIST = ["sunyuwu0628@126.com","sunyuwu@cnnic.cn"]
+                MAIL_LIST = ["sunyuwu@cnnic.cn"]
                 CC=[]
                 BCC=[]
                 if cc_myself:
@@ -457,7 +461,6 @@ def sendmail(request):
                 MAIL_POSTFIX = "cnnic.cn" 
                 MAIL_FROM = MAIL_USER + "<"+MAIL_USER + "@" + MAIL_POSTFIX + ">" 
                 message = MIMEMultipart()  
-                pdb.set_trace()
                 message.attach(MIMEText(text,'plain','utf-8'))  
                 message["Subject"] = subject  
                 message["From"] = MAIL_FROM  

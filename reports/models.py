@@ -46,7 +46,7 @@ class Domain(models.Model):
         return self.domain_name
 class Ip(models.Model):
     report=models.ManyToManyField(Report,related_name='ips')
-    addr=models.IPAddressField(unique=True)
+    addr=models.GenericIPAddressField(unique=True)
     origin=models.CharField(max_length=50,default='')
     # 0 means client , 1 means recursion
     type=models.IntegerField(default=0)
