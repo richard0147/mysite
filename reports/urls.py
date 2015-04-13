@@ -13,4 +13,5 @@ urlpatterns = patterns('',
     # ex: /reports/5/detail/
     
     url(r'^sendmail/$', views.sendmail, name='sendmail'),
+    url(r'^getDnslaCurrentData/$', views.getDnslaCurrentData, name='getDnslaCurrentData'),
 )

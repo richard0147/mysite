@@ -19,57 +19,75 @@
       <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-zh-CN.js' %}"></script>
       <script src="http://echarts.baidu.com/build/dist/echarts.js"></script>
       <script type="text/javascript">
-        // ECharts路径配置
-        require.config({
-            paths: {
-                echarts: 'http://echarts.baidu.com/build/dist'
-            }
+        
+        
+        $.ajax({
+            type: 'get',
+            url: '/reports/getDnslaCurrentData/' ,
+            success: function(data){
+                // ECharts路径配置
+                require.config({
+                    paths: {
+                        echarts: 'http://echarts.baidu.com/build/dist'
+                    }
+                });
+                // 使用
+                require(
+                    [
+                        'echarts',
+                        'echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
+                    ],
+                    function (ec) {
+                        // 基于准备好的dom，初始化echarts图表
+                        for (var i=0;i<data.length;i++){
+                            var myChart_dname = ec.init(document.getElementById('dnsla-dname-img'+i.toString()));
+                            //var myChart = ec.init(document.getElementById('dnsla-dname-img1'));                      
+                            var option_dname = {
+                                title:{
+                                    text:'域名',
+                                    x:'center'
+                                },
+                                tooltip: {
+                                    trigger:'axis'
+                                },
+                                /*legend: {
+                                    data:['域名']
+                                },*/
+                                xAxis : [
+                                    {
+                                        type : 'value'
+                                    }
+                                ],
+                                yAxis : [
+                                    {
+                                        "type" : 'category',
+                                        "data" : data[i].dname.y
+                                    }
+                                ],
+                                series : [
+                                    {
+                                        "name":"",
+                                        "type":"bar",
+                                        "data":data[i].dname.x
+                                    }
+                                ]
+                            };
+                    
+                            // 为echarts对象加载数据 
+                            myChart_dname.setOption(option_dname); 
+                        
+                        }
+                        
+                    }
+                );
+            } ,
+            dataType: 'json'
         });
         
-        // 使用
-        require(
-            [
-                'echarts',
-                'echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
-            ],
-            function (ec) {
-                // 基于准备好的dom，初始化echarts图表
-                var myChart = ec.init(document.getElementById('echartsmain'));                      
-                var option = {
-                    title:{
-                        text:'域名',
-                        x:'center'
-                    },
-                    tooltip: {
-                        trigger:'axis'
-                    },
-                    /*legend: {
-                        data:['域名']
-                    },*/
-                    xAxis : [
-                        {
-                            type : 'value'
-                        }
-                    ],
-                    yAxis : [
-                        {
-                            type : 'category',
-                            data : ["in-addr.cn.","ce.cn.","cnnic.cn.","yihaodian.com.cn.","diditaxi.com.cn.","dns.com.cn", "t.cn","mobage.com.cn.","ccgslb.com.cn.","dns.cn.","dynamic.163data.com.cn.","uc.cn.","cnradio.com.cn."]
-                        }
-                    ],
-                    series : [
-                        {
-                            "name":"",
-                            "type":"bar",
-                            "data":[12,12,12,12,13,13,13,13,13,13, 66, 51,50]
-                        }
-                    ]
-                };
         
-                // 为echarts对象加载数据 
-                myChart.setOption(option); 
-            }
-        );
+        
+        
+        
       </script>
     
     <script type="text/javascript">
@@ -145,6 +163,7 @@
         put_btn_after_show_ele($(".domain-format"),"btn-domain");
         put_btn_after_show_ele($(".ip-format"),"btn-ip");
         put_btn_after_show_ele($(".process-format"),"btn-process");
+        
     })
     function put_btn_after_show_ele(eles,btn_id){
         var divs=$(eles).parent('div');
@@ -415,7 +434,7 @@
 		{% endfor %}
 		</div>
       {% endif %}
-      {# dnsla图片不支持选择,目前展示两张图片 #}
+      {# dnsla图片不支持选择 #}
       <hr>
       <div class="form-group">
          <div class="row"><div class="col-lg-12">
@@ -424,18 +443,14 @@
          <div class="row"><div class="col-lg-2">
            <label for="{{ form.mrtg_image.id_for_label }}">DNSLA图像:</label>
          </div></div>
+         {% for nb,val in dnsla_image_dic.items %}
          <div class="row">
-            {% for mii in form.dnsla_image %}
-                {{mii}}
-            {% endfor %}
-            
-            {% for key,value in mrtg_dnsla_dic.items %}
-                <img src="{{mrtg_dnsla_prefix}}{{value}}" class="img-thumbnail dnsla-format" index="{{key}}"></img>
-            {% endfor %}
-            <div class="col-lg-6" id="echartsmain" style="height:600px">
-              
+            <div class="col-lg-6" id="dnsla-dname-img{{nb}}" style="height:400px">
+            </div>
+            <div class="col-lg-6" id="dnsla-addr-img{{nb}}" style="height:400px">
             </div>
          </div>
+         {% endfor %}
        </div>
        <button type="submit" value="提交" class="btn btn-default">提交</button>
     </form>

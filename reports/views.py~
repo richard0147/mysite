@@ -11,6 +11,8 @@ from django.core.files import File
 from generic import *
 #import pythonwhois
 import urllib
+import json
+from django.utils.safestring import SafeString
 
 mrtg_image_dic={}
 dnsla_image_dic={}
@@ -54,10 +56,9 @@ def create(request):
         form = ReportForm()
         #生成全局图像字典变量
         mrtg_image_dic=get_mrtg_image()
-        #dnsla_image_dic=dnsla_mrtg_image()
-        dnsla_image_dic={}
+        dnsla_image_dic=get_dnsla_image()
+        #dnsla_image_dic={}
         
-    
     
     return render(request, 'reports/create.html', {
             'form': form,
@@ -67,7 +68,10 @@ def create(request):
             'is_create':True,
             })
 
-
+def getDnslaCurrentData(request):
+    pdb.set_trace()
+    global mrtg_image_dic
+    return  HttpResponse(json.dumps(dnsla_image_dic)) 
 def change(request,report_id):
 
     global show_persion_nb
@@ -398,29 +402,45 @@ def get_mrtg_image():
         mrtg_image_dic[image_file_num]="/media/mrtg/"+image_file_name
     return mrtg_image_dic
 
-def dnsla_get_json_data(url,nodeid,topn):
-    #TODO
-    #1,汇总所有节点
-    #2,
-    #目前以1号节点为例
-    f = urllib.urlopen(url % str(nodeid))
-    #TODO 转换成json字符串
-    json_data=f.read()
-    """
-    this_type=json_data['type']
-    rank={}
-    for i in xrange(0,topn):
-        this_rank=json_data['rank'][i]
-        rank_data=this_rank[this_type]
-        rank_count=this_rank['count']
-    """
-    return rank[0:topn]
+def dnsla_get_json_data(url,nodeid,topn,data_type):
+
+    #f = urllib.urlopen(url % str(nodeid))
+    #json_data=f.read()
     
-def dnsla_mrtg_image():
+    json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
+    
+    #pdb.set_trace()
+    #去除无用字符
+    #BOM_UTF8 '\xef\xbb\xbf' 
+    #TODO 需要线上测试3
+    data=json.loads(json_data[3:])
+    
+    x_list=[]
+    y_list=[]
+    
+
+    this_type=data['type']
+    rank={}
+    for i in xrange(0,len(data['rank'])):
+        if i>topn:
+            break
+        this_rank=data['rank'][i]
+        y_list.append(this_rank[data_type])
+        x_list.append(this_rank['count'])
+        
+
+    return x_list,y_list
+    
+def get_dnsla_image():
+    ret_dic={}
     for i in xrange(0,32):
-        if i==0 or i==2:
-            pass
-        data=dnsla_get_json_data(url=dnsla_dname_url,nodeid=1,topn=10):
+        ret_dic[str(i)]={}
+        x_list,y_list=dnsla_get_json_data(url=dnsla_dname_url,nodeid=i,topn=10,data_type='dname')
+        ret_dic[str(i)]['dname']={'x':x_list,'y':y_list}
+        #x_list,y_list=dnsla_get_json_data(url=dnsla_dname_url,nodeid=i,topn=10,data_type='addr')
+        #ret_dic[str(i)]['addr']={'x':x_list,'y':y_list}
+    return ret_dic
+        
         
 
 
