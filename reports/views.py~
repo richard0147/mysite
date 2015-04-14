@@ -56,8 +56,11 @@ def create(request):
         form = ReportForm()
         #生成全局图像字典变量
         mrtg_image_dic=get_mrtg_image()
-        dnsla_image_dic=get_dnsla_image()
+        #dnsla_image_dic=get_dnsla_image()
         #dnsla_image_dic={}
+        nodes=Node.objects.all()
+        for i in xrange(0,len(nodes)):
+            dnsla_image_dic[str(i)]={'name':nodes[i].name,'x':[],'y':[]}
         
     
     return render(request, 'reports/create.html', {
@@ -68,10 +71,8 @@ def create(request):
             'is_create':True,
             })
 
-def getDnslaCurrentData(request):
-    pdb.set_trace()
-    global mrtg_image_dic
-    return  HttpResponse(json.dumps(dnsla_image_dic)) 
+
+        
 def change(request,report_id):
 
     global show_persion_nb
@@ -123,7 +124,6 @@ def change(request,report_id):
         "abstract":report.abstract,
         "process":report.process,
         "mrtg_image":mrtg_image_index,
-        "dnsla_image":dnsla_image_index,
         }
         form = ReportForm(initial=change_dic)
 
@@ -153,6 +153,8 @@ def get_nb_of_str(string,sp):
     return ret
 
 def save_form(form,report_id):
+    global mrtg_image_dic
+    global dnsla_image_dic
     ret={'success':True,'error_message':'','report_id':report_id}
     #新建一个报告
     if report_id==0:
@@ -263,9 +265,10 @@ def save_form(form,report_id):
     #修改报告时不允许修改图像,节点
     if report_id==0:
         for i in form.cleaned_data['mrtg_image']:
-            if mrtg_image_dic.has_key(str(i)):  
+            if mrtg_image_dic.has_key(str(i)) and dnsla_image_dic.has_key(str(i)):  
                 try:
                     img_name=mrtg_image_dic[str(i)]
+                    dnsla_data=dnsla_image_dic[str(i)]
                     #计算该节点平均qps和峰值qps
                     #start_time<end_time<end_time
                     node_qps=Qps.objects.filter(node_id=int(i),end_time__gt=start_time,end_time__lt=end_time)
@@ -281,7 +284,8 @@ def save_form(form,report_id):
                         report=report,
                         nb=int(i),max_qps=max_qps,
                         average_qps=average_qps,
-                        picture=img_name
+                        picture=img_name,
+                        dsnla_json=json.dumps(dnsla_data)
                     )
                     att.save()
                     
@@ -327,8 +331,6 @@ def view(request,report_id):
         except:
             continue
     
-    dnsla_images=report.dnsla_images.all()
-    
     
     context={
         'report':report,
@@ -338,7 +340,6 @@ def view(request,report_id):
         'start_time':start_time,'end_time':end_time,
         'attact_nodes':attact_nodes,
         'processes':report.process.split(':::'),
-        'dnsla_images':dnsla_images,
         
     }
     return render(request, 'reports/view.html', context)
@@ -358,7 +359,7 @@ def get_mrtg_image():
     
     rrd_files=os.popen("find "+ rrd_file_path +" -name *.rrd").read().strip().split('\n')
 
-    mrtg_image_dic={}
+    ret={}
     for rrd_file in rrd_files:
         
         image_file_name_key=rrd_file.replace(os.path.join(rrd_file_path,'cnqps_'),'').replace('.rrd','')
@@ -399,20 +400,21 @@ def get_mrtg_image():
 			     COMMENT:" \\n"                             \
 			     COMMENT:"Last update\\: %s"'%(rrd_tool,image_file_path,start_time,end_time,rrd_file,rrd_file,rrd_file,rrd_file,str(comment_now)))
         
-        mrtg_image_dic[image_file_num]="/media/mrtg/"+image_file_name
-    return mrtg_image_dic
+        ret[image_file_num]="/media/mrtg/"+image_file_name
+    return ret
 
 def dnsla_get_json_data(url,nodeid,topn,data_type):
 
-    #f = urllib.urlopen(url % str(nodeid))
-    #json_data=f.read()
+    f = urllib.urlopen(url % str(nodeid))
+    json_data=f.read()
     
-    json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
+    #json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
     
-    #pdb.set_trace()
+    
     #去除无用字符
     #BOM_UTF8 '\xef\xbb\xbf' 
     #TODO 需要线上测试3
+    pdb.set_trace()
     data=json.loads(json_data[3:])
     
     x_list=[]
@@ -427,8 +429,8 @@ def dnsla_get_json_data(url,nodeid,topn,data_type):
         this_rank=data['rank'][i]
         y_list.append(this_rank[data_type])
         x_list.append(this_rank['count'])
-        
-
+    x_list.reverse()
+    y_list.reverse()
     return x_list,y_list
     
 def get_dnsla_image():
@@ -437,13 +439,34 @@ def get_dnsla_image():
         ret_dic[str(i)]={}
         x_list,y_list=dnsla_get_json_data(url=dnsla_dname_url,nodeid=i,topn=10,data_type='dname')
         ret_dic[str(i)]['dname']={'x':x_list,'y':y_list}
-        #x_list,y_list=dnsla_get_json_data(url=dnsla_dname_url,nodeid=i,topn=10,data_type='addr')
-        #ret_dic[str(i)]['addr']={'x':x_list,'y':y_list}
+        x_list,y_list=dnsla_get_json_data(url=dnsla_addr_url,nodeid=i,topn=10,data_type='addr')
+        ret_dic[str(i)]['addr']={'x':x_list,'y':y_list}
     return ret_dic
-        
-        
 
-
+def getDnslaCurrentData(request,nodeid):
+    
+    if nodeid=='0':
+        return  HttpResponse("")
+    global dnsla_image_dic
+    if request.method == 'GET':
+        nodeid=int(nodeid)
+        #获取dnsla数据
+        x_dname,y_dname=dnsla_get_json_data(url=dnsla_dname_url,nodeid=nodeid,topn=10,data_type='dname')
+        x_addr,y_addr=dnsla_get_json_data(url=dnsla_addr_url,nodeid=nodeid,topn=10,data_type='addr')
+        #存储到全局变量中
+        dnsla_image_dic[str(nodeid)]={}
+        dnsla_image_dic[str(nodeid)]['dname']={'x':x_dname,'y':y_dname}
+        dnsla_image_dic[str(nodeid)]['addr']={'x':x_addr,'y':y_addr}
+        
+    #返回需要的数据
+    return  HttpResponse(json.dumps(dnsla_image_dic[str(nodeid)]))
+def getDnslaOldData(request,reportid):
+    report=get_object_or_404(Report, pk=report_id)
+    attact_nodes=report.attact_nodes.all()
+    ret={}
+    for an in attact_nodes:
+        ret[str(an.nb)]=json.loads(an.dsnla_json)
+    return  HttpResponse(json.dumps(ret))
 def sendmail(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':

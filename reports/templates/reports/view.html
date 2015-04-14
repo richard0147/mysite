@@ -9,6 +9,60 @@
       <script type="text/javascript" src="{% static 'reports/js/jquery.js' %}"></script>
       <!-- 包括所有已编译的插件 -->
       <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
+      <script type="text/javascript">
+      $(function () {
+        {% if report %}
+            get_dnsla_data_by_reportid("{{report.id}}")
+        {% endif %}
+      }
+      function get_dnsla_data_by_reportid(value){
+        if(value!=""){
+            $.ajax({
+                type: 'get',
+                url: '/reports/getDnslaOldData/'+value+'/' ,
+                success: function(data){
+                    // ECharts路径配置
+                    require.config({
+                        paths: {
+                            echarts: 'http://echarts.baidu.com/build/dist'
+                        }
+                    });
+                    // 使用
+                    require(['echarts','echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
+                    ],
+                        function (ec) {
+                            for( key in data){
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart_dname = ec.init(document.getElementById('dnsla-dname-img'+key));
+                                var myChart_addr = ec.init(document.getElementById('dnsla-addr-img'+key));
+                                //var myChart = ec.init(document.getElementById('dnsla-dname-img1'));                      
+                                 var option_dname = {
+                                    title:{text:'域名',x:'center'},
+                                    tooltip: {trigger:'axis'},
+                                    xAxis : [{type : 'value'}],
+                                    yAxis : [{"type" : 'category',"data" : data[key].dname.y}],
+                                    series : [{"name":"","type":"bar","data":data[key].dname.x}]
+                                };
+                                var option_addr = {
+                                    title:{text:'ip',x:'center'},
+                                    tooltip: {trigger:'axis'},
+                                    xAxis : [{type : 'value'}],
+                                    yAxis : [{"type" : 'category',"data" : data[key].addr.y}],
+                                    series : [{"name":"","type":"bar","data":data[key].addr.x}]
+                                };
+                                
+                                // 为echarts对象加载数据  渲染dnsla数据
+                                myChart_dname.setOption(option_dname); 
+                                myChart_addr.setOption(option_addr); 
+                                }
+                        }
+                    );
+                } ,
+                dataType: 'json'
+            });//ajax
+        }//if
+      }
+      </script>
    </head>
 
   <body>
@@ -79,27 +133,20 @@
           </table>
         </div>
 		
-		<h3 id="report-mrtg-image"><b>附录一	MRTG截图</b></h3>
+		<h3 id="report-mrtg-image"><b>附录	MRTG和DNSLA图像</b></h3>
 		
-		<div class="row">
 		{% for an in attact_nodes %}
+		<div class="row"><div  class="col-lg-12"></div><p>{{an.name}}<p></div>
+		<div class="row">
 		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
 		  <div  class="col-lg-4">
-		    <p>{{an.name}}<p>
 		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
 		  </div>
-		{% if forloop.counter|divisibleby:"3" %}
+		  <div  class="col-lg-4" id="dnsla-dname-img{{an.nb}}" style="height:400px"></div>
+		  <div  class="col-lg-4" id="dnsla-addr-img{{an.nb}}" style="height:400px"></div>
 		</div>
-        <div class="row">
-        {% endif %}
 		{% endfor %}
-		</div>
 		
-		<h3 id="report-dnsla-image"><b>附录二	部分dnsla分析图像</b></h3>
-		{% for dnsla_image in dnsla_images %}
-		    <img src="{{dnsla_image.picture.url}}" class="img-thumbnail"></img>
-		{% endfor %}
-
 	</div>
     </div>
   </div>

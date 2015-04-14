@@ -13,5 +13,6 @@ urlpatterns = patterns('',
     # ex: /reports/5/detail/
     
     url(r'^sendmail/$', views.sendmail, name='sendmail'),
-    url(r'^getDnslaCurrentData/$', views.getDnslaCurrentData, name='getDnslaCurrentData'),
+    url(r'^getDnslaCurrentData/(?P<nodeid>\d+)/$', views.getDnslaCurrentData, name='getDnslaCurrentData'),
+    url(r'^getDnslaOldData/(?P<reportid>\d+)/$', views.getDnslaOldData, name='getDnslaOldData'),
 )

@@ -36,6 +36,7 @@ class Attact_node(models.Model):
     max_qps=models.IntegerField()
     average_qps=models.IntegerField()
     picture=models.ImageField(upload_to='mrtg')
+    dsnla_json=models.CharField(max_length=100)
 
 class Domain(models.Model):
     report=models.ManyToManyField(Report,related_name='domains')
@@ -162,8 +163,8 @@ class PersionMultiField(forms.MultiValueField):
 
 
 
-mrtgChoices=(('0','SUM'),('1','CNNIC'),('2','瑞典'),('4','成都电信'),('5','广州移动'),('6','韩国'),('7','德国'),('8','Neustar'),('9','香港'),('10','美国ISC'),('11','广州电信'),)
-dnslaChoices=((),())
+mrtgChoices=((str(node.nb),node.name) for node in Node.objects.all())
+#mrtgChoices
 
 class ReportForm(forms.Form):
 
@@ -220,12 +221,6 @@ class ReportForm(forms.Form):
         choices=mrtgChoices,
         label='MRTG图像',
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'mrtg-format'})
-    )
-    dnsla_image=forms.TypedMultipleChoiceField(
-        required=False,
-        choices=dnslaChoices,
-        label='DNSLA图像',
-        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control dnsla-format'})
     )
 
 
