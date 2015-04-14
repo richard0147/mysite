@@ -2,11 +2,6 @@
 from django.contrib import admin
 from reports.models import *
 # Register your models here.
-
-class DnslaInline(admin.TabularInline):
-    model= Dnsla_images
-    extra = 3
-
 class ProcessInline(admin.TabularInline):
     model=Process
     extra = 3
@@ -33,7 +28,7 @@ class ReportsAdmin(admin.ModelAdmin):
             ('攻击是否已结束', {'fields': ['is_end']}),
             
         ]
-        inlines = [DnslaInline,ProcessInline,AttactNodesInline]
+        inlines = [ProcessInline,AttactNodesInline]
         #要展示的列
         #list_display = ('question_text', 'pub_date', 'was_published_recently')
         #右侧的过滤器 ,按照发表时间过滤       

@@ -27,7 +27,7 @@
           <div class="row">
           <div class="col-lg-2 col-md-offset-8">
               <p align="center">
-                <a class="btn btn-primary  btn-block" role="button" href="{% url 'reports:create' 0 %}"">
+                <a class="btn btn-primary  btn-block" role="button" href="{% url 'reports:create' %}"">
                 创建报告
                 </a>
               </p >
@@ -59,12 +59,12 @@
                   <tr >
                      <td>{{ report.id }}</td>
                      <td>{{ report.create_time }}</td>
-                     <td><a href="{% url 'reports:view' report.id %}">{{ report.abstract }}</a></td>
+                     <td>{{ report.abstract }}</td>
                      <td>
                        <!-- 按钮大小 xs sm none-->
                        <button class="btn btn-danger  btn-sm" >删除</button>
                        <a class="btn btn-success btn-sm" href="{% url 'reports:change' report.id %}">修改</a>
-                       <!--a class="btn btn-success btn-sm" href="{% url 'reports:view' report.id %}">预览</a-->
+                       <a class="btn btn-success btn-sm" href="{% url 'reports:view' report.id %}">预览</a>
                      </td>
                   </tr>
                   {% endfor %}

@@ -39,7 +39,6 @@ def create(request):
         form = ReportForm(request.POST)
         #表单数据验证
         if form.is_valid():
-            
             #验证成功,存入数据库
             ret=save_form(form,0)
             if ret['success']:
@@ -60,7 +59,7 @@ def create(request):
         #dnsla_image_dic={}
         nodes=Node.objects.all()
         for i in xrange(0,len(nodes)):
-            dnsla_image_dic[str(i)]={'name':nodes[i].name,'x':[],'y':[]}
+            dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'x':[],'y':[]}
         
     
     return render(request, 'reports/create.html', {
@@ -79,6 +78,7 @@ def change(request,report_id):
     global show_domain_nb
     global show_ip_nb
     global show_process_nb
+    global dnsla_image_dic
     if request.method == 'POST':
         form = ReportForm(request.POST)
         
@@ -94,20 +94,13 @@ def change(request,report_id):
     else:
         report = get_object_or_404(Report, pk=report_id)
         attact_nodes=report.attact_nodes.all()
-
-            
-        change_mrtg_image_dic={}
-        change_dnsla_image_dic={}
         
-        #mrtg_image_dic[]=an.picture
         mrtg_image_index=[]
-        dnsla_image_index=[]
         for an in attact_nodes:
             try:
                 node=Node.objects.get(nb=an.nb)
                 an.name=node.name
                 an.abbr=node.abbr
-                change_mrtg_image_dic[str(an.nb)]=an.picture.url
                 mrtg_image_index.append(str(an.nb))
             except Exception,e:
                 pass
@@ -132,6 +125,10 @@ def change(request,report_id):
         show_ip_nb=get_nb_of_str(ip_str,":::")
         show_process_nb=get_nb_of_str(report.process,":::")
         
+        nodes=Node.objects.all()
+        for i in xrange(0,len(nodes)):
+            dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'x':[],'y':[]}
+        
     return render(request, 'reports/create.html', {
         'form': form,
         'is_form':True,
@@ -142,6 +139,7 @@ def change(request,report_id):
         "show_domain_nb":show_domain_nb,
         "show_ip_nb":show_ip_nb,
         "show_process_nb":show_process_nb,
+        "dnsla_image_dic":dnsla_image_dic,
         })
 
 def get_nb_of_str(string,sp):
@@ -268,6 +266,7 @@ def save_form(form,report_id):
             if mrtg_image_dic.has_key(str(i)) and dnsla_image_dic.has_key(str(i)):  
                 try:
                     img_name=mrtg_image_dic[str(i)]
+                    #dnsla图像以json数据格式保存,前段echarts库图形显示
                     dnsla_data=dnsla_image_dic[str(i)]
                     #计算该节点平均qps和峰值qps
                     #start_time<end_time<end_time
@@ -285,21 +284,10 @@ def save_form(form,report_id):
                         nb=int(i),max_qps=max_qps,
                         average_qps=average_qps,
                         picture=img_name,
-                        dsnla_json=json.dumps(dnsla_data)
+                        dnsla_json=json.dumps(dnsla_data)
                     )
                     att.save()
                     
-                except Exception,e:
-                    ret['success']=False
-                    ret['error_message']=str(e)
-                    return ret
-        #处理dnsla图像
-        for i in form.cleaned_data['dnsla_image']:
-            if dnsla_image_dic.has_key(str(i)):  
-                try:
-                    img_name=dnsla_image_dic[str(i)]
-                    image=Dnsla_images(report=report,picture=img_name)
-                    image.save()
                 except Exception,e:
                     ret['success']=False
                     ret['error_message']=str(e)
@@ -405,18 +393,17 @@ def get_mrtg_image():
 
 def dnsla_get_json_data(url,nodeid,topn,data_type):
 
-    f = urllib.urlopen(url % str(nodeid))
-    json_data=f.read()
+    #f = urllib.urlopen(url % str(nodeid))
+    #json_data=f.read()
     
-    #json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
-    
+    if data_type=='dname':
+        json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
+    else:
+        json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"addr","rank":[{"addr":"101.226.160.0","count":"917"},{"addr":"220.181.108.0","count":"415"},{"addr":"174.36.22.3","count":"167"},{"addr":"180.153.229.0","count":"255"},{"addr":"195.2.240.2","count":"87"},{"addr":"180.97.35.0","count":"206"},{"addr":"74.125.46.0","count":"82"},{"addr":"42.156.207.0","count":"146"},{"addr":"173.194.98.0","count":"53"},{"addr":"61.139.113.0","count":"118"},{"addr":"104.156.251.22","count":"48"},{"addr":"115.239.212.0","count":"63"},{"addr":"220.181.108.0","count":"364"},{"addr":"212.54.41.0","count":"43"},{"addr":"202.101.173.0","count":"58"},{"addr":"123.125.71.0","count":"302"},{"addr":"91.210.72.56","count":"33"},{"addr":"202.96.209.0","count":"50"},{"addr":"82.96.64.2","count":"32"},{"addr":"111.206.36.0","count":"258"},{"addr":"101.226.3.85","count":"45"},{"addr":"81.175.171.0","count":"25"},{"addr":"180.153.229.0","count":"246"},{"addr":"222.217.39.0","count":"44"},{"addr":"195.177.123.1","count":"18"},{"addr":"211.98.71.0","count":"120"},{"addr":"180.137.252.0","count":"36"},{"addr":"220.181.12.0","count":"113"},{"addr":"195.94.224.4","count":"17"},{"addr":"61.188.16.0","count":"33"}]}'
     
     #去除无用字符
     #BOM_UTF8 '\xef\xbb\xbf' 
-    #TODO 需要线上测试3
-    pdb.set_trace()
     data=json.loads(json_data[3:])
-    
     x_list=[]
     y_list=[]
     
@@ -446,7 +433,7 @@ def get_dnsla_image():
 def getDnslaCurrentData(request,nodeid):
     
     if nodeid=='0':
-        return  HttpResponse("")
+        return  HttpResponse(json.dumps(""))
     global dnsla_image_dic
     if request.method == 'GET':
         nodeid=int(nodeid)
@@ -460,13 +447,15 @@ def getDnslaCurrentData(request,nodeid):
         
     #返回需要的数据
     return  HttpResponse(json.dumps(dnsla_image_dic[str(nodeid)]))
+
 def getDnslaOldData(request,reportid):
-    report=get_object_or_404(Report, pk=report_id)
+    report=get_object_or_404(Report, pk=reportid)
     attact_nodes=report.attact_nodes.all()
     ret={}
     for an in attact_nodes:
-        ret[str(an.nb)]=json.loads(an.dsnla_json)
+        ret[str(an.nb)]=json.loads(an.dnsla_json)
     return  HttpResponse(json.dumps(ret))
+    
 def sendmail(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':

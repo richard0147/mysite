@@ -9,12 +9,13 @@
       <script type="text/javascript" src="{% static 'reports/js/jquery.js' %}"></script>
       <!-- 包括所有已编译的插件 -->
       <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
+      <script type="text/javascript" src="{% static 'reports/dist/echarts.js' %}"></script>
       <script type="text/javascript">
       $(function () {
         {% if report %}
             get_dnsla_data_by_reportid("{{report.id}}")
         {% endif %}
-      }
+      })
       function get_dnsla_data_by_reportid(value){
         if(value!=""){
             $.ajax({
@@ -24,7 +25,7 @@
                     // ECharts路径配置
                     require.config({
                         paths: {
-                            echarts: 'http://echarts.baidu.com/build/dist'
+                            echarts: "{% static 'reports/dist' %}"
                         }
                     });
                     // 使用
@@ -133,20 +134,43 @@
           </table>
         </div>
 		
-		<h3 id="report-mrtg-image"><b>附录	MRTG和DNSLA图像</b></h3>
+		<h3 id="report-mrtg-image"><b>附录一  MRTG图像</b></h3>
+		
+		
+		<div class="row">
+		{% for an in attact_nodes %}
+		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
+		  <div  class="col-lg-4">
+		    <p>{{an.name}}<p>
+		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
+		  </div>
+		  
+		{% if forloop.counter|divisibleby:"3" %}
+        </div>
+        <hr>
+        <div class="row">
+        {% endif %}
+        {% endfor %}
+		</div>
+		
+		
+		<h3 id="report-mrtg-image"><b>附录二  DNSLA图像</b></h3>
 		
 		{% for an in attact_nodes %}
 		<div class="row"><div  class="col-lg-12"></div><p>{{an.name}}<p></div>
 		<div class="row">
 		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
-		  <div  class="col-lg-4">
-		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
-		  </div>
-		  <div  class="col-lg-4" id="dnsla-dname-img{{an.nb}}" style="height:400px"></div>
-		  <div  class="col-lg-4" id="dnsla-addr-img{{an.nb}}" style="height:400px"></div>
+		  <div  class="col-lg-6" id="dnsla-dname-img{{an.nb}}" style="height:400px"></div>
+		  <div  class="col-lg-6" id="dnsla-addr-img{{an.nb}}" style="height:400px"></div>
 		</div>
+		<hr>
 		{% endfor %}
 		
+		<div class="row">
+          <div class="col-lg-1 col-md-offset-10" >
+            <a class="btn btn-primary" href="{% url 'reports:index' %}">确定</a>
+          </div>
+        </div>
 	</div>
     </div>
   </div>

@@ -17,7 +17,7 @@
 	  <script type="text/javascript" src="{% static 'reports/js/jquery-ui-1.8.17.custom.min.js' %}"></script>
 	  <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-addon.js' %}"></script>
       <script type="text/javascript" src="{% static 'reports/js/jquery-ui-timepicker-zh-CN.js' %}"></script>
-      <script src="http://echarts.baidu.com/build/dist/echarts.js"></script>
+      <script type="text/javascript" src="{% static 'reports/dist/echarts.js' %}"></script>
     
     <script type="text/javascript">
     $(function () {
@@ -96,11 +96,62 @@
         
         {% if is_create %}
         {% else %}
-          {% for an in attact_nodes %}
-            get_dnsla_data_by_nodeid("{{an.nb}}");
-          {% endfor %}
+            get_dnsla_data_by_reportid("{{report_id}}")
+           
         {% endif %}
     })
+    function get_dnsla_data_by_reportid(value){
+        if(value!=""){
+            $.ajax({
+                type: 'get',
+                url: '/reports/getDnslaOldData/'+value+'/' ,
+                success: function(data){
+                    // ECharts路径配置
+                    
+                    require.config({
+                        paths: {
+                            echarts: "{% static 'reports/dist' %}"
+                        }
+                    });
+                    // 使用
+                    require(['echarts','echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
+                    ],
+                        function (ec) {
+                            for( key in data){
+                                //显示画布
+                                $("#dnsla-img"+key).show();
+                                $("#dnsla-img-head"+key).show();
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart_dname = ec.init(document.getElementById('dnsla-dname-img'+key));
+                                var myChart_addr = ec.init(document.getElementById('dnsla-addr-img'+key));
+                                //var myChart = ec.init(document.getElementById('dnsla-dname-img1'));                      
+                                 var option_dname = {
+                                    title:{text:'域名',x:'center'},
+                                    tooltip: {trigger:'axis'},
+                                    xAxis : [{type : 'value'}],
+                                    yAxis : [{"type" : 'category',"data" : data[key].dname.y}],
+                                    series : [{"name":"","type":"bar","data":data[key].dname.x}]
+                                };
+                                var option_addr = {
+                                    title:{text:'ip',x:'center'},
+                                    tooltip: {trigger:'axis'},
+                                    xAxis : [{type : 'value'}],
+                                    yAxis : [{"type" : 'category',"data" : data[key].addr.y}],
+                                    series : [{"name":"","type":"bar","data":data[key].addr.x}]
+                                };
+                                
+                                // 为echarts对象加载数据  渲染dnsla数据
+                                myChart_dname.setOption(option_dname); 
+                                myChart_addr.setOption(option_addr); 
+                                }
+                        }
+                    );
+                } ,
+                dataType: 'json'
+            });//ajax
+        }//if
+      }
+      
     function get_dnsla_data_by_nodeid(value){
       if(value!=""){
           $.ajax({
@@ -108,10 +159,12 @@
                 url: '/reports/getDnslaCurrentData/'+value+'/' ,
                 success: function(data){
                   if (data!=""){
+                    data.name
                     // ECharts路径配置
                     require.config({
                         paths: {
-                            echarts: 'http://echarts.baidu.com/build/dist'
+                            echarts: "{% static 'reports/dist' %}"
+                            
                         }
                     });
                     // 使用
@@ -157,16 +210,21 @@
     function click_mrtg_image(){
         var value=$(this).attr('value');
         //判断
+        if (value==="0"){
+            return;
+        }
         if($("#dnsla-img"+value).is(":hidden")){
             $("#dnsla-img"+value).show();
+            $("#dnsla-img-head"+value).show();
             //发送ajax请求 获取dnsla图片数据
             get_dnsla_data_by_nodeid(value);
         }else{
             $("#dnsla-img"+value).hide();
+            $("#dnsla-img-head"+value).hide();
             $("#dnsla-dname-img"+value).empty();
             $("#dnsla-addr-img"+value).empty();
         }
-        
+        return;
         
         
     }
@@ -261,7 +319,7 @@
     </script>
   </head>
   <body>
-    <div class="row">
+    <div class="row bg-success" >
     <div class="col-lg-12">
       <h1 align="center">故障报告生成系统</h1>
     </div>
@@ -309,9 +367,6 @@
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-12">
-         {{ form.start_time.errors }}
-         </div></div>
          <div class="row">
          <div class="col-lg-2">
            <label for="{{ form.start_time.id_for_label }}">开始时间:</label>
@@ -319,19 +374,22 @@
          <div class="col-lg-3">
             {{form.start_time}}
          </div>
+         <div class="col-lg-7">
+         {{ form.start_time.errors }}
+         </div>
          </div>
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
-         {{ form.end_time.errors }}
-         </div></div>
          <div class="row">
          <div class="col-lg-2">
            <label for="{{ form.end_time.id_for_label }}">结束时间:</label>
          </div>
          <div class="col-lg-3">
             {{form.end_time}}
+         </div>
+         <div class="col-lg-7">
+         {{ form.end_time.errors }}
          </div>
          </div>
        </div>
@@ -367,7 +425,7 @@
        </div>
        
        <div class="form-group">
-         <div class="row"><div class="col-lg-2">
+         <div class="row"><div class="col-lg-12">
          {{ form.abstract.errors }}
          </div></div>
          <div class="row">
@@ -435,6 +493,7 @@
 		  </div>
         {% if forloop.counter|divisibleby:"4" %}
         </div>
+        <hr>
         <div class="row">
         {% endif %}
 		{% endfor %}
@@ -451,18 +510,25 @@
            <label for="{{ form.mrtg_image.id_for_label }}">DNSLA图像:</label>
          </div></div>
          {% for nb,val in dnsla_image_dic.items %}
-         <div class="row dnsla-img" id="dnsla-img{{nb}}" >
-            <div class="col-lg-2">
-              <p>{{val.name}}</p>
+         <div class="row dnsla-img" id="dnsla-img-head{{nb}}"><div class="col-lg-12"><p>{{val.name}}</p></div></div>
+         <div class="row dnsla-img" id="dnsla-img{{nb}}">
+            <div class="col-lg-6" id="dnsla-dname-img{{nb}}" style="height:400px">
             </div>
-            <div class="col-lg-5" id="dnsla-dname-img{{nb}}" style="height:400px">
-            </div>
-            <div class="col-lg-5" id="dnsla-addr-img{{nb}}" style="height:400px">
+            <div class="col-lg-6" id="dnsla-addr-img{{nb}}" style="height:400px">
             </div>
          </div>
+         
          {% endfor %}
        </div>
-       <button type="submit" value="提交" class="btn btn-default">提交</button>
+       
+        <div class="row">
+          <div class="col-lg-1 col-md-offset-10" >
+            <a class="btn btn-danger" href="{% url 'reports:index' %}">取消</a>
+          </div>
+          <div class="col-lg-1" >
+            <button type="submit" value="提交" class="btn btn-success">提交</button>
+          </div>
+        </div>
     </form>
     
     {% else %}

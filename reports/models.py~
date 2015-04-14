@@ -36,7 +36,7 @@ class Attact_node(models.Model):
     max_qps=models.IntegerField()
     average_qps=models.IntegerField()
     picture=models.ImageField(upload_to='mrtg')
-    dsnla_json=models.CharField(max_length=100)
+    dnsla_json=models.CharField(max_length=2000)
 
 class Domain(models.Model):
     report=models.ManyToManyField(Report,related_name='domains')
@@ -162,9 +162,8 @@ class PersionMultiField(forms.MultiValueField):
         return ''
 
 
-
-mrtgChoices=((str(node.nb),node.name) for node in Node.objects.all())
-mrtgChoices
+mrtgChoices=(('0', u'SUM'), ('1', u'主节点'), ('2', u'瑞典'), ('4', u'成都电信'), ('5', u'广州移动'), ('6', u'韩国'), ('7', u'德国'), ('8', u'美国Neustar'), ('9', u'香港'), ('10', u'美国ISC'), ('11', u'广州电信'), ('12', u'英国'), ('13', u'西安电信'), ('14', u'南京联通'), ('15', u'广州联通'), ('16', u'南京电信'), ('17', u'济南联通'), ('18', u'沈阳联通'), ('19', u'北京移动'), ('20', u'上海电信'), ('21', u'杭州阿里'), ('24', u'长城网'), ('25', u'曼彻斯特'), ('26', u'新加坡'), ('27', u'芝加哥'), ('29', u'荷兰'), ('30', u'北京联通'), ('31', u'美国达拉斯'))
+#mrtgChoices
 
 class ReportForm(forms.Form):
 
