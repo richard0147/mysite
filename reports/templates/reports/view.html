@@ -15,6 +15,8 @@
         {% if report %}
             get_dnsla_data_by_reportid("{{report.id}}")
         {% endif %}
+        $(".dnsla-img").hide();
+        
       })
       function get_dnsla_data_by_reportid(value){
         if(value!=""){
@@ -33,6 +35,9 @@
                     ],
                         function (ec) {
                             for( key in data){
+                                //显示画布
+                                $("#dnsla-img"+key).show();
+                                $("#dnsla-img-head"+key).show();
                                 // 基于准备好的dom，初始化echarts图表
                                 var myChart_dname = ec.init(document.getElementById('dnsla-dname-img'+key));
                                 var myChart_addr = ec.init(document.getElementById('dnsla-addr-img'+key));
@@ -157,8 +162,8 @@
 		<h3 id="report-mrtg-image"><b>附录二  DNSLA图像</b></h3>
 		
 		{% for an in attact_nodes %}
-		<div class="row"><div  class="col-lg-12"></div><p>{{an.name}}<p></div>
-		<div class="row">
+		<div class="row dnsla-img" id="dnsla-img-head{{an.nb}}"><div  class="col-lg-12"></div><p>{{an.name}}<p></div>
+		<div class="row dnsla-img" id="dnsla-img{{an.nb}}">
 		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
 		  <div  class="col-lg-6" id="dnsla-dname-img{{an.nb}}" style="height:400px"></div>
 		  <div  class="col-lg-6" id="dnsla-addr-img{{an.nb}}" style="height:400px"></div>

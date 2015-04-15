@@ -59,7 +59,7 @@ def create(request):
         #dnsla_image_dic={}
         nodes=Node.objects.all()
         for i in xrange(0,len(nodes)):
-            dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'x':[],'y':[]}
+            dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'dname':{'x':[],'y':[]},'addr':{'x':[],'y':[]}}
         
     
     return render(request, 'reports/create.html', {
@@ -79,6 +79,7 @@ def change(request,report_id):
     global show_ip_nb
     global show_process_nb
     global dnsla_image_dic
+    
     if request.method == 'POST':
         form = ReportForm(request.POST)
         
@@ -102,6 +103,7 @@ def change(request,report_id):
                 an.name=node.name
                 an.abbr=node.abbr
                 mrtg_image_index.append(str(an.nb))
+                dnsla_image_dic[str(node.nb)]={'name':node.name,'dname':{'x':[],'y':[]},'addr':{'x':[],'y':[]}}
             except Exception,e:
                 pass
           
@@ -124,11 +126,6 @@ def change(request,report_id):
         show_domain_nb=get_nb_of_str(domain_str,":::")
         show_ip_nb=get_nb_of_str(ip_str,":::")
         show_process_nb=get_nb_of_str(report.process,":::")
-        
-        nodes=Node.objects.all()
-        for i in xrange(0,len(nodes)):
-            dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'x':[],'y':[]}
-        
     return render(request, 'reports/create.html', {
         'form': form,
         'is_form':True,
@@ -453,6 +450,8 @@ def getDnslaOldData(request,reportid):
     attact_nodes=report.attact_nodes.all()
     ret={}
     for an in attact_nodes:
+        if an.nb==0:
+            continue
         ret[str(an.nb)]=json.loads(an.dnsla_json)
     return  HttpResponse(json.dumps(ret))
     

@@ -118,6 +118,9 @@
                     ],
                         function (ec) {
                             for( key in data){
+                                if(key==='0'){
+                                  continue;
+                                }
                                 //显示画布
                                 $("#dnsla-img"+key).show();
                                 $("#dnsla-img-head"+key).show();
@@ -491,9 +494,9 @@
 		    <p>{{an.name}}<p>
 		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
 		  </div>
-        {% if forloop.counter|divisibleby:"4" %}
+        {% if forloop.counter|divisibleby:"3" %}
         </div>
-        <hr>
+        
         <div class="row">
         {% endif %}
 		{% endfor %}
@@ -501,7 +504,6 @@
 		
       {% endif %}
       {# dnsla图片不支持选择 #}
-      <hr>
       <div class="form-group">
          <div class="row"><div class="col-lg-12">
          {{ form.mrtg_image.errors }}
@@ -510,7 +512,9 @@
            <label for="{{ form.mrtg_image.id_for_label }}">DNSLA图像:</label>
          </div></div>
          {% for nb,val in dnsla_image_dic.items %}
-         <div class="row dnsla-img" id="dnsla-img-head{{nb}}"><div class="col-lg-12"><p>{{val.name}}</p></div></div>
+         
+         <div class="row dnsla-img" id="dnsla-img-head{{nb}}"><div class="col-lg-12"><br>
+         <hr><p>{{val.name}}</p></div></div>
          <div class="row dnsla-img" id="dnsla-img{{nb}}">
             <div class="col-lg-6" id="dnsla-dname-img{{nb}}" style="height:400px">
             </div>
