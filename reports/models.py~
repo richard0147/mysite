@@ -19,12 +19,6 @@ class Report(models.Model):
     def __unicode__(self):              # __unicode__ on Python 2
         return self.title
 
-
-
-class Dnsla_images(models.Model):
-    report=models.ForeignKey(Report,related_name='dnsla_images')
-    picture=models.ImageField(upload_to='dnsla')
-
 class Process(models.Model):
     report=models.ForeignKey(Report,related_name='processes')
     create_time=models.DateTimeField()

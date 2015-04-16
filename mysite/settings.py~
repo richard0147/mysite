@@ -45,7 +45,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.csrf.CsrfResponseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -97,4 +96,9 @@ STATIC_URL = '/static/'
 EMAIL_HOST = "smtp.126.com"
 EMAIL_PORT=25
 EMAIL_HOST_USER = "sunyuwu0628@126.com" 
-EMAIL_HOST_PASS = "abc_25031874" 
+EMAIL_HOST_PASS = "abc_25031874"
+
+#RRD_TOOL="/opt/rrdtool-1.4.7/bin/rrdtool"
+#RRD_FILE_PATH="/home/mrtg/mrtg/htdocs/cnqps/"
+RRD_TOOL="/usr/bin/rrdtool"
+RRD_FILE_PATH="/home/richard/develop/mysite/mrtg"

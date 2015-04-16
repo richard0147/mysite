@@ -13,6 +13,7 @@ from generic import *
 import urllib
 import json
 from django.utils.safestring import SafeString
+from django.conf import settings
 
 mrtg_image_dic={}
 dnsla_image_dic={}
@@ -48,7 +49,25 @@ def create(request):
                 ret['is_form']=False
                 return render(request,'reports/create.html',ret)
             #return HttpResponseRedirect('/reports/')
-
+        else:
+            pdb.set_trace()
+            try:
+                nodeidlist=form.cleaned_data['mrtg_image']
+            except:
+                nodeidlist=[]
+                
+            nodes=Node.objects.all()
+            for i in xrange(0,len(nodes)):
+                dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'dname':{'x':[],'y':[]},'addr':{'x':[],'y':[]}}
+            return render(request, 'reports/create.html', {
+                'form': form,
+                'mrtg_image_dic':mrtg_image_dic,
+                'dnsla_image_dic':dnsla_image_dic,
+                'is_form':True,
+                'is_create':True,
+                'is_valid':False,
+                'nodeidlist':nodeidlist,
+            })
     # if a GET (or any other method) we'll create a blank form
     else:
         #生成一个空的表单,非绑定
@@ -60,14 +79,14 @@ def create(request):
         nodes=Node.objects.all()
         for i in xrange(0,len(nodes)):
             dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'dname':{'x':[],'y':[]},'addr':{'x':[],'y':[]}}
-        
-    
+
     return render(request, 'reports/create.html', {
             'form': form,
             'mrtg_image_dic':mrtg_image_dic,
             'dnsla_image_dic':dnsla_image_dic,
             'is_form':True,
             'is_create':True,
+            'is_valid':True,
             })
 
 
@@ -106,7 +125,7 @@ def change(request,report_id):
                 dnsla_image_dic[str(node.nb)]={'name':node.name,'dname':{'x':[],'y':[]},'addr':{'x':[],'y':[]}}
             except Exception,e:
                 pass
-          
+
         domain_str=":::".join(domain.domain_name for domain in report.domains.all())
         ip_str=":::".join(ip.addr for ip in report.ips.all())
         change_dic={
@@ -341,7 +360,8 @@ def get_mrtg_image():
     comment_now=time.strftime('%Y-%m-%d %H\:%M\:%S',now)
     file_time=time.strftime('%Y%m%d%H%M%S',now)
 	
-    
+    rrd_tool=settings.RRD_TOOL
+    rrd_file_path=settings.RRD_FILE_PATH
     rrd_files=os.popen("find "+ rrd_file_path +" -name *.rrd").read().strip().split('\n')
 
     ret={}
@@ -390,14 +410,15 @@ def get_mrtg_image():
 
 def dnsla_get_json_data(url,nodeid,topn,data_type):
 
-    #f = urllib.urlopen(url % str(nodeid))
-    #json_data=f.read()
+    if settings.DEBUG:
+        if data_type=='dname':
+            json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
+        else:
+            json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"addr","rank":[{"addr":"101.226.160.0","count":"917"},{"addr":"220.181.108.0","count":"415"},{"addr":"174.36.22.3","count":"167"},{"addr":"180.153.229.0","count":"255"},{"addr":"195.2.240.2","count":"87"},{"addr":"180.97.35.0","count":"206"},{"addr":"74.125.46.0","count":"82"},{"addr":"42.156.207.0","count":"146"},{"addr":"173.194.98.0","count":"53"},{"addr":"61.139.113.0","count":"118"},{"addr":"104.156.251.22","count":"48"},{"addr":"115.239.212.0","count":"63"},{"addr":"220.181.108.0","count":"364"},{"addr":"212.54.41.0","count":"43"},{"addr":"202.101.173.0","count":"58"},{"addr":"123.125.71.0","count":"302"},{"addr":"91.210.72.56","count":"33"},{"addr":"202.96.209.0","count":"50"},{"addr":"82.96.64.2","count":"32"},{"addr":"111.206.36.0","count":"258"},{"addr":"101.226.3.85","count":"45"},{"addr":"81.175.171.0","count":"25"},{"addr":"180.153.229.0","count":"246"},{"addr":"222.217.39.0","count":"44"},{"addr":"195.177.123.1","count":"18"},{"addr":"211.98.71.0","count":"120"},{"addr":"180.137.252.0","count":"36"},{"addr":"220.181.12.0","count":"113"},{"addr":"195.94.224.4","count":"17"},{"addr":"61.188.16.0","count":"33"}]}'
     
-    if data_type=='dname':
-        json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
     else:
-        json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"addr","rank":[{"addr":"101.226.160.0","count":"917"},{"addr":"220.181.108.0","count":"415"},{"addr":"174.36.22.3","count":"167"},{"addr":"180.153.229.0","count":"255"},{"addr":"195.2.240.2","count":"87"},{"addr":"180.97.35.0","count":"206"},{"addr":"74.125.46.0","count":"82"},{"addr":"42.156.207.0","count":"146"},{"addr":"173.194.98.0","count":"53"},{"addr":"61.139.113.0","count":"118"},{"addr":"104.156.251.22","count":"48"},{"addr":"115.239.212.0","count":"63"},{"addr":"220.181.108.0","count":"364"},{"addr":"212.54.41.0","count":"43"},{"addr":"202.101.173.0","count":"58"},{"addr":"123.125.71.0","count":"302"},{"addr":"91.210.72.56","count":"33"},{"addr":"202.96.209.0","count":"50"},{"addr":"82.96.64.2","count":"32"},{"addr":"111.206.36.0","count":"258"},{"addr":"101.226.3.85","count":"45"},{"addr":"81.175.171.0","count":"25"},{"addr":"180.153.229.0","count":"246"},{"addr":"222.217.39.0","count":"44"},{"addr":"195.177.123.1","count":"18"},{"addr":"211.98.71.0","count":"120"},{"addr":"180.137.252.0","count":"36"},{"addr":"220.181.12.0","count":"113"},{"addr":"195.94.224.4","count":"17"},{"addr":"61.188.16.0","count":"33"}]}'
-    
+        f = urllib.urlopen(url % str(nodeid))
+        json_data=f.read()
     #去除无用字符
     #BOM_UTF8 '\xef\xbb\xbf' 
     data=json.loads(json_data[3:])
@@ -407,6 +428,8 @@ def dnsla_get_json_data(url,nodeid,topn,data_type):
 
     this_type=data['type']
     rank={}
+    if data['rank']==None:
+        return [],[]
     for i in xrange(0,len(data['rank'])):
         if i>topn:
             break

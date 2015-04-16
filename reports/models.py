@@ -47,13 +47,8 @@ class Ip(models.Model):
     type=models.IntegerField(default=0)
     def __unicode__(self):              # __unicode__ on Python 2
         return self.addr
-class Qps_snapshots(models.Model):
-    start_time=models.DateTimeField()
-    end_time=models.DateTimeField()
-    create_time=models.DateField(auto_now_add=True)
 
 class Qps(models.Model):
-    snap_id=models.ForeignKey(Qps_snapshots)
     node_id=models.IntegerField(default=0)
     end_time=models.DateTimeField()
     in_qps=models.IntegerField(default=0)

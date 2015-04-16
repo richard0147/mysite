@@ -99,6 +99,15 @@
             get_dnsla_data_by_reportid("{{report_id}}")
            
         {% endif %}
+        
+        {% if is_valid %}
+        {% else %}
+          {% for nodeid in nodeidlist %}
+            get_dnsla_data_by_nodeid("{{nodeid}}")
+            $("#dnsla-img{{nodeid}}").show();
+            $("#dnsla-img-head{{nodeid}}").show();
+          {% endfor %}
+        {% endif %}
     })
     function get_dnsla_data_by_reportid(value){
         if(value!=""){
