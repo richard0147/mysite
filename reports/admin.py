@@ -2,9 +2,6 @@
 from django.contrib import admin
 from reports.models import *
 # Register your models here.
-class ProcessInline(admin.TabularInline):
-    model=Process
-    extra = 3
 
 class AttactNodesInline(admin.TabularInline):
     model=Attact_node
@@ -28,7 +25,7 @@ class ReportsAdmin(admin.ModelAdmin):
             ('攻击是否已结束', {'fields': ['is_end']}),
             
         ]
-        inlines = [ProcessInline,AttactNodesInline]
+        inlines = [AttactNodesInline]
         #要展示的列
         #list_display = ('question_text', 'pub_date', 'was_published_recently')
         #右侧的过滤器 ,按照发表时间过滤       

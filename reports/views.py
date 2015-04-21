@@ -556,9 +556,9 @@ def sendmail(request):
                 MAIL_POSTFIX = "cnnic.cn" 
                 MAIL_FROM = MAIL_USER + "<"+MAIL_USER + "@" + MAIL_POSTFIX + ">" 
                 message = MIMEMultipart()  
-                message.attach(MIMEText(text,'plain','utf-8'))  
+                message.attach(MIMEText("from %s:\n%s"%(sender,text),'plain','utf-8'))  
                 message["Subject"] = subject  
-                message["From"] = MAIL_FROM  
+                message["From"] = MAIL_FROM
                 message["To"] = ";".join(MAIL_LIST)  
                 message["BCC"] = ";".join(BCC)
                 message["CC"] = ";".join(CC)
@@ -594,6 +594,34 @@ def average_of_list(input_list):
     else:
         return 0
 
+def delete(request,report_id):
+    report = get_object_or_404(Report, pk=report_id)
+    
+    #解除多对多关系
+    domains=report.domains.all()
+    for obj in domains:
+        obj.report.remove(report)
+        if len(obj.report.all())==0:
+            obj.delete()
+
+    ips=report.ips.all()
+    for obj in ips:
+        obj.report.remove(report)
+        if len(obj.report.all())==0:
+            obj.delete()
+
+    #直接删除外键
+    attact_nodes=report.attact_nodes.all()
+    for obj in attact_nodes:
+        #从磁盘上删除文件
+        picture_path=os.path.join(settings.MEDIA_ROOT,obj.picture.url[1:])
+        if os.path.isfile(picture_path):
+            os.remove(picture_path)
+        obj.delete()
+    
+    report.delete()
+    
+    return index(request)
 
 
 

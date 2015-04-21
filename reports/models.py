@@ -19,11 +19,6 @@ class Report(models.Model):
     def __unicode__(self):              # __unicode__ on Python 2
         return self.title
 
-class Process(models.Model):
-    report=models.ForeignKey(Report,related_name='processes')
-    create_time=models.DateTimeField()
-    content=models.CharField(max_length=200)
-
 class Attact_node(models.Model):
     report=models.ForeignKey(Report,related_name='attact_nodes')
     nb=models.IntegerField()
