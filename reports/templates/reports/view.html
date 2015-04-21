@@ -18,6 +18,12 @@
         $(".dnsla-img").hide();
         
       })
+      function change(id){
+            $('#myModal').modal('show');
+            $('div.modal-footer').children('button.btn-primary').click(function(){
+                window.location.href='/reports/'+id+'/change/'; 
+            })
+        }
       function get_dnsla_data_by_reportid(value){
         if(value!=""){
             $.ajax({
@@ -75,7 +81,7 @@
   {% if report %}
   <div class="container-fluid">
     <div class="row">
-    <div class="col-lg-6 col-md-offset-3">
+    <div class="col-lg-6 col-lg-offset-3">
         
         <h2 id="report-title"><b><center>{{report.title}}</center></b></h2>
         <br/>
@@ -172,7 +178,10 @@
 		{% endfor %}
 		
 		<div class="row">
-          <div class="col-lg-1 col-md-offset-10" >
+          <div class="col-lg-1 col-lg-offset-10" >
+            <a class="btn btn-success" onclick="change({{report.id}})">修改</a>
+          </div>
+          <div class="col-lg-1" >
             <a class="btn btn-primary" href="{% url 'reports:index' %}">确定</a>
           </div>
         </div>
@@ -180,5 +189,33 @@
     </div>
   </div>
   {% endif %}
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+       aria-labelledby="myModalLabel" aria-hidden="true">
+       <div class="modal-dialog">
+          <div class="modal-content">
+             <div class="modal-header">
+                <button type="button" class="close" 
+                   data-dismiss="modal" aria-hidden="true">
+                      &times;
+                </button>
+                <h3 class="modal-title" id="myModalLabel">
+                   提示
+                </h3>
+             </div>
+             <div class="modal-body">
+                <h4>修改报告会覆盖之前保存的mrtg图片,确认修改么?</h4>
+             </div>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-default" 
+                   data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary">
+                   确认
+                </button>
+             </div>
+          </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+
   </body>
 </html>

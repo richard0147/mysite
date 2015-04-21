@@ -13,28 +13,10 @@
     </head>
   <body>
       <div class="container-fluid bg-success" >
-        <div class="row">
-        <div class="col-lg-6 col-lg-offset-3">
           <div class="row">
           <div class="col-lg-12">
             <h1 align="center">联系作者</h1>
             <p align="center">这是一个故障报告生成系统</p>
-          </div>
-          </div>
-          <div class="row">
-          <div class="col-lg-2 col-md-offset-8">
-              <p align="center">
-                <a class="btn btn-primary  btn-block" role="button" href="{% url 'reports:create' 0 %}"">
-                创建报告
-                </a>
-              </p >
-          </div>
-          <div class="col-lg-2">
-              <p align="center">
-                <a class="btn btn-primary  btn-block" role="button" data-toggle="modal" data-target="#myModal" href="{% url 'reports:sendmail' %}">
-                联系作者
-                </a>
-              </p >
           </div>
           </div>
                 
@@ -124,9 +106,6 @@
             <br><br><br><br><br><br><br><br><br>
           </div>
           </div>
-        </div>
-        </div> 
       </div>
-
   </body>
 </html>

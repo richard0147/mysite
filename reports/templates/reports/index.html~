@@ -10,6 +10,14 @@
         <!-- 包括所有已编译的插件 -->
         <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'reports/js/index.js' %}"></script>
+        <script type="text/javascript">
+        function change(id){
+            $('#myModal').modal('show');
+            $('div.modal-footer').children('button.btn-primary').click(function(){
+                window.location.href='/reports/'+id+'/change/'; 
+            })
+        }
+        </script>
     </head>
   <body>
     <!--div class="jumbotron" style='background-image:url("{% static 'reports/images/Partitura_by_Vincijun.jpg' %}");'-->
@@ -17,7 +25,7 @@
       <!--img src="{% static 'reports/images/Partitura_by_Vincijun.jpg' %}" class="img-rounded"-->
       <div class="container-fluid bg-success" >
         <div class="row">
-        <div class="col-lg-6 col-md-offset-3">
+        <div class="col-lg-6 col-lg-offset-3">
           <div class="row">
           <div class="col-lg-12">
             <h1 align="center">故障报告生成系统</h1>
@@ -25,9 +33,9 @@
           </div>
           </div>
           <div class="row">
-          <div class="col-lg-2 col-md-offset-8">
+          <div class="col-lg-2 col-lg-offset-8">
               <p align="center">
-                <a class="btn btn-primary  btn-block" role="button" href="{% url 'reports:create' %}"">
+                <a class="btn btn-primary  btn-block" role="button" href="{% url 'reports:create' %}">
                 创建报告
                 </a>
               </p >
@@ -63,8 +71,9 @@
                      <td>
                        <!-- 按钮大小 xs sm none-->
                        <button class="btn btn-danger  btn-sm" >删除</button>
-                       <a class="btn btn-success btn-sm" href="{% url 'reports:change' report.id %}">修改</a>
-                       <a class="btn btn-success btn-sm" href="{% url 'reports:view' report.id %}">预览</a>
+                       <!--a class="btn btn-success btn-sm" href="{% url 'reports:change' report.id %}">修改</a-->
+                       <a class="btn btn-success btn-sm" onclick="change({{report.id}})">修改</a>
+                       <a class="btn btn-primary btn-sm" href="{% url 'reports:view' report.id %}">预览</a>
                      </td>
                   </tr>
                   {% endfor %}
@@ -82,6 +91,34 @@
         </div>
         </div> 
       </div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+   aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <button type="button" class="close" 
+               data-dismiss="modal" aria-hidden="true">
+                  &times;
+            </button>
+            <h3 class="modal-title" id="myModalLabel">
+               提示
+            </h3>
+         </div>
+         <div class="modal-body">
+            <h4>修改报告会覆盖之前保存的mrtg图片,确认修改么?</h4>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-default" 
+               data-dismiss="modal">关闭
+            </button>
+            <button type="button" class="btn btn-primary">
+               确定修改
+            </button>
+         </div>
+      </div><!-- /.modal-content -->
+</div><!-- /.modal -->
 
   </body>
 </html>

@@ -21,6 +21,7 @@ show_persion_nb=""
 show_domain_nb=""
 show_ip_nb=""
 show_process_nb=""
+attact_nodes={}
 
 # Create your views here.
 def index(request):
@@ -50,9 +51,10 @@ def create(request):
                 return render(request,'reports/create.html',ret)
             #return HttpResponseRedirect('/reports/')
         else:
-            pdb.set_trace()
             try:
                 nodeidlist=form.cleaned_data['mrtg_image']
+                if '0' in nodeidlist:
+                    nodeidlist.remove('0')
             except:
                 nodeidlist=[]
                 
@@ -98,6 +100,8 @@ def change(request,report_id):
     global show_ip_nb
     global show_process_nb
     global dnsla_image_dic
+    global mrtg_image_dic
+    global attact_nodes
     
     if request.method == 'POST':
         form = ReportForm(request.POST)
@@ -107,6 +111,7 @@ def change(request,report_id):
             
             if ret['success']:
                 return HttpResponseRedirect('/reports/')
+                return view(request,report_id)
             else:
                 #保存失败 返回错误
                 ret['is_form']=False
@@ -139,12 +144,19 @@ def change(request,report_id):
         "process":report.process,
         "mrtg_image":mrtg_image_index,
         }
+
         form = ReportForm(initial=change_dic)
 
+        #刷新全局变量
+        mrtg_image_dic=get_mrtg_image()
+        nodes=Node.objects.all()
+        for i in xrange(0,len(nodes)):
+            dnsla_image_dic[str(nodes[i].nb)]={'name':nodes[i].name,'dname':{'x':[],'y':[]},'addr':{'x':[],'y':[]}}
         show_persion_nb=get_nb_of_str(report.persion,":::")
         show_domain_nb=get_nb_of_str(domain_str,":::")
         show_ip_nb=get_nb_of_str(ip_str,":::")
         show_process_nb=get_nb_of_str(report.process,":::")
+
     return render(request, 'reports/create.html', {
         'form': form,
         'is_form':True,
@@ -156,6 +168,7 @@ def change(request,report_id):
         "show_ip_nb":show_ip_nb,
         "show_process_nb":show_process_nb,
         "dnsla_image_dic":dnsla_image_dic,
+        "mrtg_image_dic":mrtg_image_dic,
         })
 
 def get_nb_of_str(string,sp):
@@ -270,44 +283,39 @@ def save_form(form,report_id):
                 ip_obj.report.add(report)
 
     
-    origin_ele=set(str(an.nb) for an in report.attact_nodes.all())
-    new_ele=set(form.cleaned_data['mrtg_image'])
-    del_ele=list(origin_ele-new_ele)
-    add_ele=list(new_ele-origin_ele)
-    
-    #只有新建报告时才处理图像,节点
-    #修改报告时不允许修改图像,节点
-    if report_id==0:
-        for i in form.cleaned_data['mrtg_image']:
-            if mrtg_image_dic.has_key(str(i)) and dnsla_image_dic.has_key(str(i)):  
-                try:
-                    img_name=mrtg_image_dic[str(i)]
-                    #dnsla图像以json数据格式保存,前段echarts库图形显示
-                    dnsla_data=dnsla_image_dic[str(i)]
-                    #计算该节点平均qps和峰值qps
-                    #start_time<end_time<end_time
-                    node_qps=Qps.objects.filter(node_id=int(i),end_time__gt=start_time,end_time__lt=end_time)
-                    inqps_list=[]
-                    outqps_list=[]
-                    for nq in node_qps:
-                        inqps_list.append(nq.in_qps)
-                        outqos_list.append(nq.out_qps)
-                    
-                    max_qps=max_of_list(inqps_list+outqps_list)
-                    average_qps=average_of_list(inqps_list+outqps_list)
-                    att=Attact_node(
-                        report=report,
-                        nb=int(i),max_qps=max_qps,
-                        average_qps=average_qps,
-                        picture=img_name,
-                        dnsla_json=json.dumps(dnsla_data)
-                    )
-                    att.save()
-                    
-                except Exception,e:
-                    ret['success']=False
-                    ret['error_message']=str(e)
-                    return ret
+    #修改时删除所有攻击节点,重新赋值
+    for an in report.attact_nodes.all():
+        an.delete()
+    for i in form.cleaned_data['mrtg_image']:
+        if mrtg_image_dic.has_key(str(i)) and dnsla_image_dic.has_key(str(i)):  
+            try:
+                img_name=mrtg_image_dic[str(i)]
+                #dnsla图像以json数据格式保存,前段echarts库图形显示
+                dnsla_data=dnsla_image_dic[str(i)]
+                #计算该节点平均qps和峰值qps
+                #start_time<end_time<end_time
+                node_qps=Qps.objects.filter(node_id=int(i),end_time__gt=start_time,end_time__lt=end_time)
+                inqps_list=[]
+                outqps_list=[]
+                for nq in node_qps:
+                    inqps_list.append(nq.in_qps)
+                    outqps_list.append(nq.out_qps)
+                
+                max_qps=max_of_list(inqps_list+outqps_list)
+                average_qps=average_of_list(inqps_list+outqps_list)
+                att=Attact_node(
+                    report=report,
+                    nb=int(i),max_qps=max_qps,
+                    average_qps=average_qps,
+                    picture=img_name,
+                    dnsla_json=json.dumps(dnsla_data)
+                )
+                att.save()
+                
+            except Exception,e:
+                ret['success']=False
+                ret['error_message']=str(e)
+                return ret
     return ret
 
 def view(request,report_id):
@@ -464,11 +472,13 @@ def getDnslaCurrentData(request,nodeid):
         dnsla_image_dic[str(nodeid)]={}
         dnsla_image_dic[str(nodeid)]['dname']={'x':x_dname,'y':y_dname}
         dnsla_image_dic[str(nodeid)]['addr']={'x':x_addr,'y':y_addr}
+        dnsla_image_dic[str(nodeid)]['name']=Node.objects.get(nb=nodeid).name
         
     #返回需要的数据
     return  HttpResponse(json.dumps(dnsla_image_dic[str(nodeid)]))
 
 def getDnslaOldData(request,reportid):
+    global dnsla_image_dic
     report=get_object_or_404(Report, pk=reportid)
     attact_nodes=report.attact_nodes.all()
     ret={}
@@ -476,6 +486,8 @@ def getDnslaOldData(request,reportid):
         if an.nb==0:
             continue
         ret[str(an.nb)]=json.loads(an.dnsla_json)
+    #刷新全局变量
+    dnsla_image_dic.update(ret)
     return  HttpResponse(json.dumps(ret))
     
 def sendmail(request):

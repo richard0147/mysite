@@ -60,7 +60,7 @@
         row_add($(".process-format"),1,'8','2');
         
         //wrap在每个被选元素的周围用 HTML 元素包裹起来
-        $("input.mrtg-format").parent('label').wrap('<div class="col-lg-3"></div>');
+        $(".mrtg-format").parent('label').wrap('<div class="col-lg-3"></div>');
         var show_persion_nb="{{show_persion_nb}}";
         var show_domain_nb="{{show_domain_nb}}";
         var show_ip_nb="{{show_ip_nb}}";
@@ -92,7 +92,7 @@
         put_btn_after_show_ele($(".ip-format"),"btn-ip");
         put_btn_after_show_ele($(".process-format"),"btn-process");
         
-        $("input.mrtg-format").click(click_mrtg_image);
+        $(".mrtg-format").click(click_mrtg_image);
         
         {% if is_create %}
         {% else %}
@@ -103,7 +103,7 @@
         {% if is_valid %}
         {% else %}
           {% for nodeid in nodeidlist %}
-            get_dnsla_data_by_nodeid("{{nodeid}}")
+            get_dnsla_data_by_nodeid("{{nodeid}}");
             $("#dnsla-img{{nodeid}}").show();
             $("#dnsla-img-head{{nodeid}}").show();
           {% endfor %}
@@ -165,7 +165,7 @@
       }
       
     function get_dnsla_data_by_nodeid(value){
-      if(value!=""){
+      if(value!=""&& value!="0"){
           $.ajax({
                 type: 'get',
                 url: '/reports/getDnslaCurrentData/'+value+'/' ,
@@ -467,7 +467,6 @@
        
        
       <hr>
-      {% if is_create %}
       <div class="form-group">
          <div class="row"><div class="col-lg-12">
          {{ form.mrtg_image.errors }}
@@ -490,28 +489,8 @@
        </div>
        
        
-      {# 修改模式下不支持选择图片功能 #}
-      {% else %}
-        <div class="row"><div class="col-lg-2">
-           <label for="{{ form.mrtg_image.id_for_label }}">MRTG图像:</label>
-        </div></div>
-        
-        <div class="row">
-        {% for an in attact_nodes %}
-		<!--img src="{% static 'reports/images/Jelly_Fish_by_RaDu_GaLaN.jpg' %}" class="img-thumbnail"></img-->
-		  <div  class="col-lg-4">
-		    <p>{{an.name}}<p>
-		    <img src="{{an.picture.url}}" class="img-thumbnail"></img>
-		  </div>
-        {% if forloop.counter|divisibleby:"3" %}
-        </div>
-        
-        <div class="row">
-        {% endif %}
-		{% endfor %}
-		</div>
-		
-      {% endif %}
+
+      
       {# dnsla图片不支持选择 #}
       <div class="form-group">
          <div class="row"><div class="col-lg-12">
@@ -535,7 +514,7 @@
        </div>
        
         <div class="row">
-          <div class="col-lg-1 col-md-offset-10" >
+          <div class="col-lg-1 col-lg-offset-10" >
             <a class="btn btn-danger" href="{% url 'reports:index' %}">取消</a>
           </div>
           <div class="col-lg-1" >
