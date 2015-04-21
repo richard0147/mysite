@@ -66,16 +66,16 @@
         var show_ip_nb="{{show_ip_nb}}";
         var show_process_nb="{{show_process_nb}}";
         
-        if(typeof(show_persion_nb) == "undefined" || typeof(show_persion_nb) == "null" || show_persion_nb == null || show_persion_nb == ""){
+        if(typeof(show_persion_nb) == "undefined" || typeof(show_persion_nb) == "null" || show_persion_nb == null || show_persion_nb == ""||show_persion_nb==="0"){
             show_persion_nb=2
         }
-        if(typeof(show_domain_nb) == "undefined" || typeof(show_domain_nb) == "null" || show_domain_nb == null || show_domain_nb == ""){
+        if(typeof(show_domain_nb) == "undefined" || typeof(show_domain_nb) == "null" || show_domain_nb == null || show_domain_nb == ""||show_domain_nb==="0"){
             show_domain_nb=2
         }
-        if(typeof(show_ip_nb) == "undefined" || typeof(show_ip_nb) == "null" || show_ip_nb == null || show_ip_nb == ""){
+        if(typeof(show_ip_nb) == "undefined" || typeof(show_ip_nb) == "null" || show_ip_nb == null || show_ip_nb == ""||show_ip_nb==="0"){
             show_ip_nb=2
         }
-        if(typeof(show_process_nb) == "undefined" || typeof(show_process_nb) == "null" || show_process_nb == null || show_process_nb == ""){
+        if(typeof(show_process_nb) == "undefined" || typeof(show_process_nb) == "null" || show_process_nb == null || show_process_nb == ""||show_process_nb==="0"){
             show_process_nb=2
         }
         //元素隐藏
@@ -96,8 +96,15 @@
         
         {% if is_create %}
         {% else %}
+          {% if is_change_valid %}
             get_dnsla_data_by_reportid("{{report_id}}")
-           
+          {% else %}
+            {% for nodeid in nodeidlist %}
+            get_dnsla_data_by_nodeid("{{nodeid}}");
+            $("#dnsla-img{{nodeid}}").show();
+            $("#dnsla-img-head{{nodeid}}").show();
+            {% endfor %}
+          {% endif %}
         {% endif %}
         
         {% if is_valid %}

@@ -44,12 +44,13 @@ def create(request):
             #验证成功,存入数据库
             ret=save_form(form,0)
             if ret['success']:
-                return HttpResponseRedirect('/reports/')
+                #return HttpResponseRedirect('/reports/')
+                #重定向到预览页面
+                return view(request,ret['report_id'])
             else:
                 #保存失败 返回错误
                 ret['is_form']=False
                 return render(request,'reports/create.html',ret)
-            #return HttpResponseRedirect('/reports/')
         else:
             try:
                 nodeidlist=form.cleaned_data['mrtg_image']
@@ -110,12 +111,37 @@ def change(request,report_id):
             ret=save_form(form,report_id)
             
             if ret['success']:
-                return HttpResponseRedirect('/reports/')
+                #return HttpResponseRedirect('/reports/')
+                #重定向到预览页面
                 return view(request,report_id)
             else:
                 #保存失败 返回错误
                 ret['is_form']=False
                 return render(request,'reports/create.html',ret)
+        #change验证未通过
+        else:
+            try:
+                nodeidlist=form.cleaned_data['mrtg_image']
+                if '0' in nodeidlist:
+                    nodeidlist.remove('0')
+            except:
+                nodeidlist=[]
+                
+            return render(request, 'reports/create.html', {
+            'form': form,
+            'is_form':True,
+            'is_create':False,
+            'report_id':report_id,
+            "attact_nodes":attact_nodes,
+            "show_persion_nb":show_persion_nb,
+            "show_domain_nb":show_domain_nb,
+            "show_ip_nb":show_ip_nb,
+            "show_process_nb":show_process_nb,
+            "dnsla_image_dic":dnsla_image_dic,
+            "mrtg_image_dic":mrtg_image_dic,
+            "is_change_valid":False,
+            "nodeidlist":nodeidlist,
+            })
     else:
         report = get_object_or_404(Report, pk=report_id)
         attact_nodes=report.attact_nodes.all()
@@ -169,6 +195,7 @@ def change(request,report_id):
         "show_process_nb":show_process_nb,
         "dnsla_image_dic":dnsla_image_dic,
         "mrtg_image_dic":mrtg_image_dic,
+        "is_change_valid":True,
         })
 
 def get_nb_of_str(string,sp):
@@ -316,6 +343,8 @@ def save_form(form,report_id):
                 ret['success']=False
                 ret['error_message']=str(e)
                 return ret
+    
+    ret['report_id']=report.id
     return ret
 
 def view(request,report_id):
