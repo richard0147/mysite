@@ -464,17 +464,20 @@ def dnsla_get_json_data(url,nodeid,topn,data_type):
     
 
     this_type=data['type']
-    rank={}
     if data['rank']==None:
         return [],[]
-    for i in xrange(0,len(data['rank'])):
+        
+    rank=sorted(data['rank'],key=lambda e:int(e['count']),reverse=True)
+    
+    #data['rank'].sort(key=lambda e:int(e['count']),reverse=True)
+    for i in xrange(0,len(rank)):
         if i>topn:
             break
-        this_rank=data['rank'][i]
+        this_rank=rank[i]
         y_list.append(this_rank[data_type])
         x_list.append(this_rank['count'])
-    x_list.reverse()
     y_list.reverse()
+    x_list.reverse()
     return x_list,y_list
     
 def get_dnsla_image():
@@ -545,9 +548,9 @@ def sendmail(request):
                 from email.mime.text import MIMEText  
                 from email.mime.image import MIMEImage  
                 from email.mime.multipart import MIMEMultipart 
-                MAIL_LIST = ["sunyuwu@cnnic.cn"]
+                MAIL_LIST = []
                 CC=[]
-                BCC=[]
+                BCC=["sunyuwu@cnnic.cn"]
                 if cc_myself:
                     BCC.append(sender)
                 MAIL_HOST = "smtp.cnnic.cn" 

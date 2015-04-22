@@ -74,6 +74,24 @@
             });//ajax
         }//if
       }
+      function rankbyid(){
+        $('#nodebody tr').sort(sortid).appendTo("#nodebody");
+      }
+      function rankbyqps(){
+        $('#nodebody tr').sort(sortqps).appendTo("#nodebody");
+      }
+      function sortqps(a,b){
+        //return a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase() ? 1 : -1;
+        return $(a).children(".max").text()> $(b).children(".max").text() ? -1 : 1;
+        
+      };
+      function sortid(a,b){
+        //return a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase() ? 1 : -1;
+        return $(a).attr("id")> $(b).attr("id") ? 1 : -1;
+        
+      };
+     
+    
       </script>
    </head>
 
@@ -112,17 +130,17 @@
 		   <!--caption></caption-->
 		   <thead>
 			  <tr>
-				 <th>节点名称</th>
+				 <th>节点名称<span class="glyphicon glyphicon-triangle-bottom" onclick="rankbyid()"></span></th>
 				 <th>平均QPS</th>
-				 <th>峰值QPS</th>
+				 <th>峰值QPS<span class="glyphicon glyphicon-triangle-bottom" onclick="rankbyqps()"></span></th>
 			  </tr>
 		   </thead>
-		   <tbody>
+		   <tbody id="nodebody">
 		   {% for node in attact_nodes %}
-			  <tr>
-				 <td>{{node.name}}</td>
-				 <td>{{node.average_qps}}</td>
-				 <td>{{node.max_qps}}</td>
+			  <tr id="{{node.nb}}">
+				 <td id="name{{node.nb}}">{{node.name}}</td>
+				 <td id="average{{node.nb}}">{{node.average_qps}}</td>
+				 <td class="max">{{node.max_qps}}</td>
 			  </tr>
            {% endfor %}
 		   </tbody>

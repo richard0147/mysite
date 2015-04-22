@@ -5,7 +5,7 @@
         <title>报告预览</title>
         <!-- 引入 Bootstrap -->
         
-        <link href="{% static 'reports/css/bootstrap.min.css' %}"" rel="stylesheet">
+        <link href="{% static 'reports/css/bootstrap.min.css' %}"" rel="stylesheet">r
         <script type="text/javascript" src="{% static 'reports/js/jquery.js' %}"></script>
         <!-- 包括所有已编译的插件 -->
         <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
