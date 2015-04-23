@@ -82,12 +82,12 @@
       }
       function sortqps(a,b){
         //return a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase() ? 1 : -1;
-        return $(a).children(".max").text()> $(b).children(".max").text() ? -1 : 1;
+        return Number($(a).children(".max").text()) > Number($(b).children(".max").text()) ? -1 : 1;
         
       };
       function sortid(a,b){
         //return a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase() ? 1 : -1;
-        return $(a).attr("id")> $(b).attr("id") ? 1 : -1;
+        return Number($(a).attr("id")) > Number($(b).attr("id")) ? 1 : -1;
         
       };
      
@@ -130,7 +130,7 @@
 		   <!--caption></caption-->
 		   <thead>
 			  <tr>
-				 <th>节点名称<span class="glyphicon glyphicon-triangle-bottom" onclick="rankbyqps()"></span></th>
+				 <th>节点名称<span class="glyphicon glyphicon-triangle-bottom" onclick="rankbyid()"></span></th>
 				 <th>平均QPS</th>
 				 <th>峰值QPS<span class="glyphicon glyphicon-triangle-bottom" onclick="rankbyqps()"></span></th>
 			  </tr>
