@@ -521,10 +521,10 @@
        </div>
        
         <div class="row">
-          <div class="col-lg-1 col-lg-offset-10" >
+          <div class="col-lg-1 col-lg-offset-4" >
             <a class="btn btn-danger" href="{% url 'reports:index' %}">取消</a>
           </div>
-          <div class="col-lg-1" >
+          <div class="col-lg-1 col-lg-offset-1" >
             <button type="submit" value="提交" class="btn btn-success">提交</button>
           </div>
         </div>
