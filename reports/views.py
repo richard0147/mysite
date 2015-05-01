@@ -12,8 +12,10 @@ from generic import *
 #import pythonwhois
 import urllib
 import json
-from django.utils.safestring import SafeString
 from django.conf import settings
+
+import base64
+
 
 mrtg_image_dic={}
 dnsla_image_dic={}
@@ -521,7 +523,139 @@ def getDnslaOldData(request,reportid):
     #刷新全局变量
     dnsla_image_dic.update(ret)
     return  HttpResponse(json.dumps(ret))
+
+def saveReport(request,report_id):
+
+    report = get_object_or_404(Report, pk=report_id)
     
+    image_str=request.POST['image']
+    image_base64=image_str.split(',')[1]
+    #保存图片
+    imgData = base64.b64decode(image_base64)
+    leniyimg = open('imgout.png','wb')
+    leniyimg.write(imgData)
+    leniyimg.close()
+    
+    from docx import Document
+    from docx.shared import Inches,Pt
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    
+    document = Document()
+    
+    create_time=str(report.create_time.date())
+    persions=report.persion.split(':::')
+    persions=' '.join(persions)
+    processes=report.process.split(':::')
+    
+    
+    year=report.start_time.year
+    month=report.start_time.month
+    day=report.start_time.day
+    end_day=report.end_time.day
+    
+    start_time=str(report.start_time.time())
+    end_time=str(report.end_time.time())
+    
+    attact_nodes=report.attact_nodes.all()
+    node_range=''
+    for an in attact_nodes:
+        try:
+            node=Node.objects.get(nb=an.nb)
+            an.name=node.name
+            node_range+=an.name
+            an.abbr=node.abbr
+        except:
+            continue
+    #填写word
+    title=document.add_heading(report.title, 0)
+    p1=u'填表日期:%s'%create_time
+    p = document.add_paragraph(p1)
+    pf = p.paragraph_format
+    pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    
+    p = document.add_paragraph(u'值班人员：%s'% persions )
+    p = document.add_paragraph(u'故障时间：%d年%d月%d日%s-%d日%s'%(year,month,day,start_time,end_day,end_time))
+    p = document.add_paragraph(u'故障类型：域名、网络、安全')
+    p = document.add_paragraph(u'影响范围：%s'%node_range)
+    p = document.add_heading(u'故障摘要：',level=1)
+    p = document.add_paragraph(report.abstract)
+    pf = p.paragraph_format
+    pf.first_line_indent = Inches(0.25)
+    
+    p = document.add_heading(u'故障现象：',level=1)
+    table = document.add_table(rows=1, cols=3)
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = u'节点名称'
+    hdr_cells[1].text = u'平均QPS'
+    hdr_cells[2].text = u'峰值QPS'
+    for an in attact_nodes:
+        hdr_cells = table.add_row().cells
+        hdr_cells[0].text = an.name
+        hdr_cells[1].text = str(an.average_qps)
+        hdr_cells[2].text = str(an.max_qps)
+    p = document.add_heading(u'处理过程：',level=1)
+    for pro in processes:
+        document.add_paragraph(
+            pro, style='ListBullet'
+        )
+    p = document.add_heading(u'附录一 MRTG图像',level=1)
+    for an in attact_nodes:
+        p = document.add_paragraph(an.name)
+        document.add_picture(settings.MEDIA_ROOT+an.picture.url, width=Inches(2.5))
+    p = document.add_heading(u'附录二 DNSLA图像',level=1)
+    document.add_picture('imgout.png', width=Inches(5))
+    
+    
+    
+    
+    '''
+    p = document.add_paragraph('A plain paragraph having some ')
+    p.add_run('bold').bold = True
+    p.add_run(' and some ')
+    p.add_run('italic.').italic = True
+
+    document.add_heading('Heading, level 1', level=1)
+    document.add_paragraph('Intense quote', style='IntenseQuote')
+
+    document.add_paragraph(
+        'first item in unordered list', style='ListBullet'
+    )
+    document.add_paragraph(
+        'first item in ordered list', style='ListNumber'
+    )
+
+    document.add_picture('imgout.png', width=Inches(2.5))
+    
+    table = document.add_table(rows=1, cols=3)
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = 'Qty'
+    hdr_cells[1].text = 'Id'
+    hdr_cells[2].text = 'Desc'
+    for item in recordset:
+        row_cells = table.add_row().cells
+        row_cells[0].text = str(item.qty)
+        row_cells[1].text = str(item.id)
+        row_cells[2].text = item.desc
+    '''
+    document.add_page_break()
+    
+    filename='%s.docx'%(report.title)
+    document.save(settings.MEDIA_ROOT+settings.MEDIA_URL+'tmp-report/'+filename)
+    
+    
+    """
+    from django.core.servers.basehttp import FileWrapper
+    
+    wrapper = FileWrapper(file(filename))
+    response = HttpResponse(wrapper, content_type='text/plain')
+    response['Content-Length'] = os.path.getsize(filename)
+    response['Content-Encoding'] = 'utf-8'
+    response['Content-Disposition'] = 'attachment;filename=%s' % filename
+    return response
+    """
+    ret={'filename':filename}
+    return HttpResponse(json.dumps(ret))
+ 
 def sendmail(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':

@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^sendmail/$', views.sendmail, name='sendmail'),
     url(r'^getDnslaCurrentData/(?P<nodeid>\d+)/$', views.getDnslaCurrentData, name='getDnslaCurrentData'),
     url(r'^getDnslaOldData/(?P<reportid>\d+)/$', views.getDnslaOldData, name='getDnslaOldData'),
+    url(r'^saveReport/(?P<report_id>\d+)/$', views.saveReport, name='saveReport'),
 )

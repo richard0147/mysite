@@ -10,6 +10,10 @@
       <!-- 包括所有已编译的插件 -->
       <script type="text/javascript" src="{% static 'reports/js/bootstrap.min.js' %}"></script>
       <script type="text/javascript" src="{% static 'reports/dist/echarts.js' %}"></script>
+      <script type="text/javascript" src="{% static 'reports/js/html2canvas.js' %}"></script>
+      <script type="text/javascript" src="{% static 'reports/js/canvas2image.js' %}"></script>
+      <!--script type="text/javascript" src="{% static 'reports/js/canvas2image.js' %}"></script-->
+      
       <script type="text/javascript">
       $(function () {
         {% if report %}
@@ -17,7 +21,83 @@
         {% endif %}
         $(".dnsla-img").hide();
         
+        //获取cookie中的csrftoken
+        var csrftoken = getCookie('csrftoken');
+        //设置ajax方法不安全时,在http头部添加csrf
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        
       })
+
+      // using jQuery
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+      function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        
+      function saveWord(report_id){
+        
+        html2canvas($("#idid"), {
+            allowTaint:true,
+            onrendered: function(canvas) {
+                $("#saveimage").append(canvas);
+                var image = new Image();
+	            image.src = canvas.toDataURL("image/png");
+	            /*
+                 * Canvas2Image.saveAsXXXX = function(oCanvasElement, bReturnImgElement, iWidth, iHeight) { ... }
+                 */
+	            var oImgPNG = Canvas2Image.saveAsPNG(canvas, true);
+	            //return image;
+	            $.ajax({
+                    type: 'post',
+                    url: '/reports/saveReport/'+report_id+'/',
+                    dataType: 'json',
+                    data:{
+                        "image":canvas.toDataURL("image/png"),
+                    },
+                    success: function(data){
+                        
+                        window.location.href='/media/tmp-report/'+data.filename; 
+                    }
+                });
+            }
+        })
+      }
+      function showcan(){
+        html2canvas(document.body, {
+            allowTaint:true,
+            onrendered: function(canvas) {
+                $("#saveimage").append(canvas);
+                var image = new Image();
+	            image.src = canvas.toDataURL("image/png");
+	            /*
+                 * Canvas2Image.saveAsXXXX = function(oCanvasElement, bReturnImgElement, iWidth, iHeight) { ... }
+                 */
+	            var oImgPNG = Canvas2Image.saveAsPNG(canvas, true);
+	            return image;
+            }
+        });
+      }
       function change(id){
             $('#myModal').modal('show');
             $('div.modal-footer').children('button.btn-primary').click(function(){
@@ -99,7 +179,7 @@
   {% if report %}
   <div class="container-fluid">
     <div class="row">
-    <div class="col-lg-6 col-lg-offset-3">
+    <div class="col-lg-8 col-lg-offset-2">
         
         <h2 id="report-title"><b><center>{{report.title}}</center></b></h2>
         <br/>
@@ -183,8 +263,10 @@
 		</div>
 		
 		
-		<h3 id="report-mrtg-image"><b>附录二  DNSLA图像</b></h3>
+		<h3 id="report-dnsla-image"><b>附录二  DNSLA图像</b></h3>
 		
+		<div class="row" id="idid">
+		<div  class="col-lg-12">
 		{% for an in attact_nodes %}
 		<div class="row dnsla-img" id="dnsla-img-head{{an.nb}}"><div  class="col-lg-12"></div><p>{{an.name}}<p></div>
 		<div class="row dnsla-img" id="dnsla-img{{an.nb}}">
@@ -194,6 +276,7 @@
 		</div>
 		<hr>
 		{% endfor %}
+		</div></div>
 		
 		<div class="row">
           <div class="col-lg-1 col-lg-offset-4" >
@@ -201,6 +284,12 @@
           </div>
           <div class="col-lg-1 col-lg-offset-1" >
             <a class="btn btn-primary" href="{% url 'reports:index' %}">确定</a>
+          </div>
+          <div class="col-lg-1 col-lg-offset-1" >
+            <a class="btn btn-primary" onclick="showcan()">保存截图</a>
+          </div>
+          <div class="col-lg-1 col-lg-offset-1" >
+            <a class="btn btn-primary" onclick="saveWord({{report.id}})">保存word</a>
           </div>
         </div>
 	</div>
@@ -233,7 +322,10 @@
                 </button>
              </div>
           </div><!-- /.modal-content -->
+      </div>
     </div><!-- /.modal -->
-
+    <div id="saveimage" style="display:none">
+        
+    </div>
   </body>
 </html>

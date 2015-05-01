@@ -12,8 +12,10 @@ from generic import *
 #import pythonwhois
 import urllib
 import json
-from django.utils.safestring import SafeString
 from django.conf import settings
+
+import base64
+
 
 mrtg_image_dic={}
 dnsla_image_dic={}
@@ -449,7 +451,7 @@ def dnsla_get_json_data(url,nodeid,topn,data_type):
 
     if settings.DEBUG:
         if data_type=='dname':
-            json_data='\xef\xbb\xbf{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
+            json_data='{"nodeid":1,"num":30,"type":"domain","rank":[{"dname":"in-addr.arpa.","count":"643"},{"dname":"in-addr.arpa.","count":"350"},{"dname":"in-addr.arpa.","count":"110"},{"dname":"teny.cn.","count":"70"},{"dname":"teny.cn.","count":"51"},{"dname":"360.cn.","count":"44"},{"dname":"dynamic.163data.com.cn.","count":"40"},{"dname":"CNiNfO.Com.cN.","count":"37"},{"dname":"dns.cn.","count":"33"},{"dname":"online.sh.cn.","count":"33"},{"dname":"ns.ptt.js.cn.","count":"32"},{"dname":"360.cn.","count":"29"},{"dname":"sina.com.cn.","count":"26"},{"dname":"zol.com.cn.","count":"25"},{"dname":"ccgslb.com.cn.","count":"23"},{"dname":"ce.cn.","count":"23"},{"dname":"bta.net.cn.","count":"22"},{"dname":"ccgslb.com.cn.","count":"19"},{"dname":"online.sh.cn.","count":"17"},{"dname":"cninfo.com.cn.","count":"17"},{"dname":"gRandClouD.cn.","count":"16"},{"dname":"dns.com.cn.","count":"16"},{"dname":"dynamic.163data.com.cn.","count":"15"},{"dname":"amazon.cn.","count":"15"},{"dname":"sdjnptt.net.cn.","count":"15"},{"dname":"cnnic.cn.","count":"15"},{"dname":"uc.cn.","count":"14"},{"dname":"3g.cn.","count":"13"},{"dname":"yihaodian.com.cn.","count":"13"},{"dname":"mq.hl.cn.","count":"12"}]}'
         else:
             json_data='{"nodeid":1,"num":30,"type":"addr","rank":[{"addr":"101.226.160.0","count":"917"},{"addr":"220.181.108.0","count":"415"},{"addr":"174.36.22.3","count":"167"},{"addr":"180.153.229.0","count":"255"},{"addr":"195.2.240.2","count":"87"},{"addr":"180.97.35.0","count":"206"},{"addr":"74.125.46.0","count":"82"},{"addr":"42.156.207.0","count":"146"},{"addr":"173.194.98.0","count":"53"},{"addr":"61.139.113.0","count":"118"},{"addr":"104.156.251.22","count":"48"},{"addr":"115.239.212.0","count":"63"},{"addr":"220.181.108.0","count":"364"},{"addr":"212.54.41.0","count":"43"},{"addr":"202.101.173.0","count":"58"},{"addr":"123.125.71.0","count":"302"},{"addr":"91.210.72.56","count":"33"},{"addr":"202.96.209.0","count":"50"},{"addr":"82.96.64.2","count":"32"},{"addr":"111.206.36.0","count":"258"},{"addr":"101.226.3.85","count":"45"},{"addr":"81.175.171.0","count":"25"},{"addr":"180.153.229.0","count":"246"},{"addr":"222.217.39.0","count":"44"},{"addr":"195.177.123.1","count":"18"},{"addr":"211.98.71.0","count":"120"},{"addr":"180.137.252.0","count":"36"},{"addr":"220.181.12.0","count":"113"},{"addr":"195.94.224.4","count":"17"},{"addr":"61.188.16.0","count":"33"}]}'
     
@@ -521,7 +523,139 @@ def getDnslaOldData(request,reportid):
     #刷新全局变量
     dnsla_image_dic.update(ret)
     return  HttpResponse(json.dumps(ret))
+
+def saveReport(request,report_id):
+
+    report = get_object_or_404(Report, pk=report_id)
     
+    image_str=request.POST['image']
+    image_base64=image_str.split(',')[1]
+    #保存图片
+    imgData = base64.b64decode(image_base64)
+    leniyimg = open('imgout.png','wb')
+    leniyimg.write(imgData)
+    leniyimg.close()
+    
+    from docx import Document
+    from docx.shared import Inches,Pt
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    
+    document = Document()
+    
+    create_time=str(report.create_time.date())
+    persions=report.persion.split(':::')
+    persions=' '.join(persions)
+    processes=report.process.split(':::')
+    
+    
+    year=report.start_time.year
+    month=report.start_time.month
+    day=report.start_time.day
+    end_day=report.end_time.day
+    
+    start_time=str(report.start_time.time())
+    end_time=str(report.end_time.time())
+    
+    attact_nodes=report.attact_nodes.all()
+    node_range=''
+    for an in attact_nodes:
+        try:
+            node=Node.objects.get(nb=an.nb)
+            an.name=node.name
+            node_range+=an.name
+            an.abbr=node.abbr
+        except:
+            continue
+    #填写word
+    title=document.add_heading(report.title, 0)
+    p1=u'填表日期:%s'%create_time
+    p = document.add_paragraph(p1)
+    pf = p.paragraph_format
+    pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    
+    p = document.add_paragraph(u'值班人员:%s'% persions )
+    p = document.add_paragraph(u'故障时间:%d年%d月%d日%s-%d日%s'%(year,month,day,start_time,end_day,end_time))
+    p = document.add_paragraph(u'故障类型：域名、网络、安全')
+    p = document.add_paragraph(u'影响范围：%s'%node_range)
+    p = document.add_heading(u'故障摘要：',level=1)
+    p = document.add_paragraph(report.abstract)
+    pf = p.paragraph_format
+    pf.first_line_indent = Inches(0.25)
+    
+    p = document.add_heading(u'故障现象：',level=1)
+    table = document.add_table(rows=1, cols=3)
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = u'节点名称'
+    hdr_cells[1].text = u'平均QPS'
+    hdr_cells[2].text = u'峰值QPS'
+    for an in attact_nodes:
+        hdr_cells = table.add_row().cells
+        hdr_cells[0].text = an.name
+        hdr_cells[1].text = str(an.average_qps)
+        hdr_cells[2].text = str(an.max_qps)
+    p = document.add_heading(u'处理过程：',level=1)
+    for pro in processes:
+        document.add_paragraph(
+            pro, style='ListBullet'
+        )
+    p = document.add_heading(u'附录一 MRTG图像',level=1)
+    for an in attact_nodes:
+        p = document.add_paragraph(an.name)
+        document.add_picture(settings.MEDIA_ROOT+an.picture.url, width=Inches(2.5))
+    p = document.add_heading(u'附录二 DNSLA图像',level=1)
+    document.add_picture('imgout.png', width=Inches(5))
+    
+    
+    
+    
+    '''
+    p = document.add_paragraph('A plain paragraph having some ')
+    p.add_run('bold').bold = True
+    p.add_run(' and some ')
+    p.add_run('italic.').italic = True
+
+    document.add_heading('Heading, level 1', level=1)
+    document.add_paragraph('Intense quote', style='IntenseQuote')
+
+    document.add_paragraph(
+        'first item in unordered list', style='ListBullet'
+    )
+    document.add_paragraph(
+        'first item in ordered list', style='ListNumber'
+    )
+
+    document.add_picture('imgout.png', width=Inches(2.5))
+    
+    table = document.add_table(rows=1, cols=3)
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = 'Qty'
+    hdr_cells[1].text = 'Id'
+    hdr_cells[2].text = 'Desc'
+    for item in recordset:
+        row_cells = table.add_row().cells
+        row_cells[0].text = str(item.qty)
+        row_cells[1].text = str(item.id)
+        row_cells[2].text = item.desc
+    '''
+    document.add_page_break()
+    
+    filename='%s.docx'%(report.title)
+    document.save(settings.MEDIA_ROOT+settings.MEDIA_URL+'tmp-report/'+filename)
+    
+    
+    """
+    from django.core.servers.basehttp import FileWrapper
+    
+    wrapper = FileWrapper(file(filename))
+    response = HttpResponse(wrapper, content_type='text/plain')
+    response['Content-Length'] = os.path.getsize(filename)
+    response['Content-Encoding'] = 'utf-8'
+    response['Content-Disposition'] = 'attachment;filename=%s' % filename
+    return response
+    """
+    ret={'filename':filename}
+    return HttpResponse(json.dumps(ret))
+ 
 def sendmail(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
