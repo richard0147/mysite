@@ -570,10 +570,17 @@ def saveReport(request,report_id):
     title=document.add_heading(report.title, 0)
     p1=u'填表日期:%s'%create_time
     p = document.add_paragraph(p1)
+    #段落格式
     pf = p.paragraph_format
+    #向右对齐
     pf.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    #TODO 字体加粗
+    run = p.add_run()
+    font = run.font
+    font.bold=True
     
-    p = document.add_paragraph(u'值班人员：%s'% persions )
+    
+    p = document.add_paragraph(u'参与人员：%s'% persions )
     p = document.add_paragraph(u'故障时间：%d年%d月%d日%s-%d日%s'%(year,month,day,start_time,end_day,end_time))
     p = document.add_paragraph(u'故障类型：域名、网络、安全')
     p = document.add_paragraph(u'影响范围：%s'%node_range)
@@ -595,6 +602,8 @@ def saveReport(request,report_id):
         hdr_cells[2].text = str(an.max_qps)
     p = document.add_heading(u'处理过程：',level=1)
     for pro in processes:
+        if pro == '':
+            continue
         document.add_paragraph(
             pro, style='ListBullet'
         )

@@ -83,6 +83,7 @@
             }
         })
       }
+      //保存canvas元素
       function showcan(){
         html2canvas(document.body, {
             allowTaint:true,
@@ -187,7 +188,7 @@
 		<br/>
 		
 		<p id="report-person">
-		  <b>值班人员：
+		  <b>参与人员：
 		    {% for persion in persions %}
 		        {{persion}} 
 		    {% endfor %}
@@ -285,11 +286,11 @@
           <div class="col-lg-1 col-lg-offset-1" >
             <a class="btn btn-primary" href="{% url 'reports:index' %}">确定</a>
           </div>
-          <div class="col-lg-1 col-lg-offset-1" >
+          <!--div class="col-lg-1 col-lg-offset-1" >
             <a class="btn btn-primary" onclick="showcan()">保存截图</a>
-          </div>
+          </div-->
           <div class="col-lg-1 col-lg-offset-1" >
-            <a class="btn btn-primary" onclick="saveWord({{report.id}})">保存word</a>
+            <a class="btn btn-primary" onclick="saveWord({{report.id}})">导出word</a>
           </div>
         </div>
 	</div>
