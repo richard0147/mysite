@@ -693,13 +693,8 @@ def sendmail(request):
                 from email.mime.multipart import MIMEMultipart 
                 MAIL_LIST = []
                 CC=[]
-                BCC=["sunyuwu@cnnic.cn"]
                 if cc_myself:
                     CC.append(sender)
-                MAIL_HOST = "smtp.cnnic.cn" 
-                MAIL_USER = "sunyuwu" 
-                MAIL_PASS = "sunqijiayou_" 
-                MAIL_POSTFIX = "cnnic.cn" 
                 MAIL_FROM = MAIL_USER + "<"+MAIL_USER + "@" + MAIL_POSTFIX + ">" 
                 message = MIMEMultipart()  
                 message.attach(MIMEText("from %s:\n%s"%(sender,text),'plain','utf-8'))  
